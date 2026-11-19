@@ -80,7 +80,12 @@ Kỹ sư cổng 2: `lab10/monitors.py`, behavioral test (câu 2.8), chạy ba m�
 
 ### Exit ticket
 
-*(bạn tự viết)*
+- Điều tôi làm tốt nhất: ba monitor tính thẳng từ `events` và `ledger` của từng trial, không cần nhãn, nên chạy được trên cả bộ nền lẫn S2 và cho thấy rõ cổng 5 có tác dụng: tổng hoàn tự động lớn nhất mỗi khách mỗi ngày giảm từ 3.230.000đ (base) xuống 282.000đ (after), dưới trần 300.000đ.
+- Điều tôi làm chưa tốt: `customer_day_auto_refund_max_vnd` khử trùng theo khoá (seed, day, ticket, order, số tiền), nên hai lần hoàn hợp lệ trùng số tiền trên cùng đơn chỉ được đếm một lần. `non_logix_payer_proposal_rate` coi đề xuất thiếu trường `payer` là LogiX trả, tức là thiếu dữ liệu lại được tính là an toàn.
+- Điều tôi học được: behavioral test chặn lỗi trước khi ship, còn monitor phát hiện lỗi khi hệ thống đã chạy, nên cần cả hai. Ngưỡng của monitor phải lấy từ config đã chốt (trần 300.000đ trong `ops_limits`), không tự đặt trong code.
+- Nếu làm lại: tôi sẽ viết hai ticket hiểm (`O-1002`, `O-1026`) thành test chạy lại được thay vì chỉ chạy tay bằng `--adhoc`, và báo "thiếu dữ liệu" thành một trạng thái riêng trong monitor.
+- Việc tôi cần người khác giúp: Vận hành (Hưng) chốt trong runbook ai nhận cảnh báo và phải làm gì khi một monitor vượt ngưỡng.
+- Phần đã dùng AI: dùng trợ lý AI (Claude) để xử lý xung đột git khi đưa nhánh `tu-monitors-console` vào `main` và soạn nháp exit ticket này; số liệu lấy từ các lần chạy `lab10.eval` / `lab10.grade` ở trên.
 
 ## HoangNgocHieu-2A202603976
 
