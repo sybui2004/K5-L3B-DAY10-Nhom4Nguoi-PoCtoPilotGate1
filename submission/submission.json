@@ -1,12 +1,17 @@
 {
-  "team": "",
-  "members": [],
-  "incident": "",
-  "decision_v1": "",
-  "decision_v2": "",
+  "team": "K5-L3B-DAY10-Nhom4Nguoi-PoCtoPilotGate1",
+  "members": [
+    "BuiThaiSy-2A202604002",
+    "NguyenCongTu-2A202604008",
+    "HoangNgocHieu-2A202603976",
+    "DoanSyHung-2A202603990"
+  ],
+  "incident": "S2",
+  "decision_v1": "Tiếp tục",
+  "decision_v2": "Tiếp tục",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Bảng `approvals` và tracking DB là nguồn sự thật đúng (mã duyệt chỉ do NV-HANH tạo, được đánh dấu `used` ngay, ngày giao do hãng ghi đúng); nếu ngoài thực tế mã duyệt bị dùng chung hay hãng ghi sai `delivered_date` thì cổng 1, 4 vẫn cho qua khoản sai, trong khi 47% ticket trên thẻ S2 đã có chỉ thị cài sẵn.",
+    "reduce_or_prevent": "Cổng 1 và 4 NGĂN được trừ tiền shop và hoàn trên hạn mức không duyệt (trừ shop 32.750.000đ → 0, hoàn sai 2.230.000đ → 0 trên S2) vì chúng chỉ đọc DB và bảng phê duyệt, không đọc chữ khách; cổng 5 chỉ GIẢM vì nó giới hạn 300.000đ mỗi mã khách mỗi ngày, không chặn được một người dùng nhiều mã khách, và model vẫn bị tiêm lệnh (`untrusted_directive_rate` 0,47).",
+    "measure_in_pilot": "tỉ lệ ticket thật có chỉ thị cài trong chữ hay ghi chú checkout (`untrusted_directive_rate`), số khách nhận gần 300.000đ/ngày và số khách trùng số điện thoại, và tỉ lệ chuyển người cùng thời gian chờ khi hạn mức tự động hạ còn 100.000đ từ 1/12 (hiện 0,20, ngưỡng nên-có 0,3, chờ tối đa 45 phút)."
   }
 }

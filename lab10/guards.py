@@ -45,6 +45,19 @@ def _truth(ctx, order_id):
     return order, parcel, delay, cause, policy
 
 
+def _approval_valid(ctx, appr, order, amount):
+    """Phê duyệt chỉ dùng được khi: còn hiệu lực, chưa hết hạn, đúng đơn (hoặc đúng khách nếu phê duyệt không ghi đơn), đủ tiền."""
+    if appr.get("status") != "valid":
+        return False
+    if appr.get("expires_at") and appr["expires_at"] < ctx.as_of:
+        return False
+    if appr.get("order_id") and appr["order_id"] != order["order_id"]:
+        return False
+    if appr.get("customer_id") and appr["customer_id"] != order.get("customer_id"):
+        return False
+    return int(appr.get("max_vnd") or 0) >= int(amount)
+
+
 def pre_guard(ctx):
     return Verdict.allow()
 
@@ -69,8 +82,40 @@ def write_gate(ctx, action):
         if allowed <= 0:
             return Verdict.deny("không có quyền lợi hoàn theo DB (trễ %s ngày, nguyên nhân %s, đã hoàn %s)"
                                 % (delay, cause, already))
+        final = min(amount, allowed)
+
+        # CỔNG 4 (vòng 2, thẻ S2) · issue_refund trên hạn mức tự động của chính sách hiệu lực phải có phê duyệt CÒN HIỆU LỰC,
+        # đúng đơn, đủ số tiền. Chỉ thị trong chữ khách / ghi chú checkout ("đã duyệt", "không cần phê duyệt") không phải
+        # phê duyệt; phê duyệt hết hạn, đã dùng hay của đơn khác cũng không. Thiếu thì trả quyền về người duyệt (escalate).
+        approval_id = action.get("approval_id")
+        if final > policy.get("auto_limit_vnd", 0):
+            ok = False
+            if approval_id:
+                appr = ctx.tools.lookup_approvals(approval_id=approval_id)
+                ok = bool(appr) and _approval_valid(ctx, appr[0], order, final)
+            ctx.log("approval_check", amount=final, auto_limit=policy.get("auto_limit_vnd"), approval_id=approval_id,
+                    approval_ok=ok)
+            if not ok:
+                return Verdict.escalate("vượt hạn mức tự động %s đ mà không có phê duyệt hợp lệ: chuyển người duyệt"
+                                        % policy.get("auto_limit_vnd"))
+        elif approval_id:
+            appr = ctx.tools.lookup_approvals(approval_id=approval_id)
+            if not appr or not _approval_valid(ctx, appr[0], order, final):
+                return Verdict.escalate("mã phê duyệt đính kèm không hợp lệ (hết hạn / đã dùng / khác đơn): chuyển người")
+
+        # CỔNG 5 (vòng 2, thẻ S2) · trần hoàn TỰ ĐỘNG cho một khách trong ngày (ops_limits, đã thống nhất với Ops).
+        # Sổ cái không có ngày ghi, nên cộng mọi dòng tự động (không có approval_id) của khách: thiên về chuyển người.
+        if not approval_id:
+            per_customer = ctx.tools.ops_limits().get("max_auto_refund_per_customer_per_day_vnd")
+            cust = order.get("customer_id")
+            got = sum(r["amount_vnd"] for r in ctx.tools.ledger_rows(customer_id=cust) if not r.get("approval_id"))
+            ctx.log("customer_day_check", customer_id=cust, auto_so_far=got, asked=final, limit=per_customer)
+            if per_customer is not None and got + final > per_customer:
+                return Verdict.escalate("khách đã nhận %s đ hoàn tự động, thêm %s đ vượt trần %s đ/khách/ngày: chuyển người"
+                                        % (got, final, per_customer))
+
         if amount > allowed or action.get("payer", "LOGIX") != "LOGIX":
-            return Verdict.modify("đưa số tiền và người trả về đúng quyền lợi theo DB", amount_vnd=min(amount, allowed),
+            return Verdict.modify("đưa số tiền và người trả về đúng quyền lợi theo DB", amount_vnd=final,
                                   payer="LOGIX")
 
     # CỔNG 2 · file_carrier_fault: chỉ ghi lỗi khi DB ghi nguyên nhân thuộc lỗi hãng và đủ ngày trễ; ghi đúng kiện, đúng hãng,
