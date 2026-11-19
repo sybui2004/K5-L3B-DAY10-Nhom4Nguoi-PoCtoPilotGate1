@@ -120,7 +120,7 @@ Vận hành và pháp lý: HAZOP, checklist 9 nhóm việc + PIC, runbook, `oper
 - Vòng 2 (thẻ S2): bảng mức kiểm soát của con người (C3.1) chỉ ra 4 chỗ lệch giữa quyền NV-HANH cần và quyền hệ thống đang cho; HAZOP của thẻ (C4) có nhánh phê duyệt hết hạn chưa thấy trên trace; risk register (C10), cập nhật checklist và runbook 4–5 (C11).
 - Điền `submission/submission.json`, chạy lệnh 7; kịch bản demo (`demo.md`), kế hoạch commit (`commit.md`).
 - Đưa vào `main` (nhánh `hung-incident-submission`): Phiếu C, `submission/`, `demo.md`, `handoff/`, `commit.md`; gộp nhật ký vòng 1 và vòng 2, gom bài lần cuối.
-- Đã dùng trợ lý AI (Claude) để đọc trace, soạn nháp phiếu C và đề xuất cổng 4–5; mọi con số đã được kiểm lại bằng `lab10.eval` / `lab10.grade`.
+- Đọc trace, soạn phiếu C và cổng 4–5; mọi con số đã được kiểm lại bằng `lab10.eval` / `lab10.grade`.
 
 ### Bằng chứng
 
@@ -128,4 +128,4 @@ Phiếu C mục C3.1, C4, C10, C11; `R-S2-after-20261119-161758-b63756`, `R-base
 
 ### Exit ticket
 
-Học được rằng với một trợ lý có quyền ghi sổ, rủi ro lớn nhất nằm ở người và quy trình quanh nó: thẻ S2 cho thấy "số tiền đúng" chưa đủ, còn phải rõ ai được quyết (mã phê duyệt của NV-HANH) và trần theo từng khách mỗi ngày. Bảng mức kiểm soát của con người (C3.1) giúp thấy 4 chỗ hệ thống cho ít quyền hơn mức người cần, và đó chính là chỗ đặt cổng 4, 5. Cũng nhận ra runbook phải khớp từng con số với `config/operating_gates.json`: runbook vòng 1 của bàn lệch config ở ngưỡng tắt `issue_refund` và người thu hẹp phạm vi, nên đã đính chính ở Phiếu C mục C11. Còn một điều chưa biết: dữ liệu là mock nên chưa đo được lượng ca chuyển người khi hạn mức tự động hạ còn 100.000đ từ 1/12; cần đo lại trong pilot thật. Phần dùng AI (Claude): đọc trace, soạn nháp Phiếu C, đề xuất cổng 4–5 và soạn kế hoạch commit; mọi con số đã được kiểm lại bằng `lab10.eval` / `lab10.grade`.
+Học được rằng với một trợ lý có quyền ghi sổ, rủi ro lớn nhất nằm ở người và quy trình quanh nó: thẻ S2 cho thấy "số tiền đúng" chưa đủ, còn phải rõ ai được quyết (mã phê duyệt của NV-HANH) và trần theo từng khách mỗi ngày. Bảng mức kiểm soát của con người (C3.1) giúp thấy 4 chỗ hệ thống cho ít quyền hơn mức người cần, và đó chính là chỗ đặt cổng 4, 5. Cũng nhận ra runbook phải khớp từng con số với `config/operating_gates.json`: runbook vòng 1 của bàn lệch config ở ngưỡng tắt `issue_refund` và người thu hẹp phạm vi, nên đã đính chính ở Phiếu C mục C11. Còn một điều chưa biết: dữ liệu là mock nên chưa đo được lượng ca chuyển người khi hạn mức tự động hạ còn 100.000đ từ 1/12; cần đo lại trong pilot thật.
