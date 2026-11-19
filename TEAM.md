@@ -2,9 +2,9 @@
 
 ## Thông tin nhóm
 
-- Tên nhóm (`TenNhom`, không dấu, không khoảng trắng):
-- Lớp: `L3A` / `L3B`
-- Repo của bàn: `K5-<L3A|L3B>-DAY10-<TenNhom>-PoCtoPilotGate1`
+- Tên nhóm (`TenNhom`, không dấu, không khoảng trắng): Nhom4Nguoi
+- Lớp: `L3B`
+- Repo của bàn: `K5-L3B-DAY10-Nhom4Nguoi-PoCtoPilotGate1`
 - Thẻ sự cố đã bốc (S1–S8):
 
 ## Thành viên
@@ -13,10 +13,10 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; bàn 3 người th
 
 | STT | Họ và tên | MSSV | Vai | Trưởng nhóm |
 | --: | --------- | ---- | --- | :---------: |
-|   1 |           |      |     |             |
-|   2 |           |      |     |             |
-|   3 |           |      |     |             |
-|   4 |           |      |     |             |
+|   1 | Bùi Thái Sỹ | 2A202604002 | Kỹ sư cổng (guards.py, trace) | x |
+|   2 | Nguyễn Công Tú | 2A202604008 | Kỹ sư cổng (monitors.py, behavioral test) | |
+|   3 | Hoàng Ngọc Hiệu | 2A202603976 | Sản phẩm và kinh doanh | |
+|   4 | Đoàn Sỹ Hưng | 2A202603990 | Vận hành và pháp lý | |
 
 Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, khớp bảng trên.
 
