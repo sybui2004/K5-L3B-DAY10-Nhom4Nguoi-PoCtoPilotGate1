@@ -189,3 +189,66 @@ Trừ điểm: thiếu TEAM.md/mục cá nhân (người đó mất điểm cá 
 - [ ] Lệnh 7 → `ĐỦ THÀNH PHẦN` trên code/config cuối
 - [ ] `submission/runs/` có `journal.jsonl`, `grade-report.*`, report ba mốc
 - [ ] Mỗi thành viên nộp link repo trên LMS
+
+---
+
+## 8. Trạng thái triển khai (cập nhật 2026-11-19)
+
+Giai đoạn 3 chưa phải cuối. Sau thẻ sự cố còn: quyết định v2, `submission.json`, lệnh 7 (GĐ 4), demo và nộp (GĐ 5).
+
+| GĐ | Trạng thái | Bằng chứng |
+|---|---|---|
+| 0 Setup | Xong | Test `Ran 13 tests … OK`; `TEAM.md` điền 4 người; git user = mã học viên trưởng nhóm |
+| 1 Tiêu chí và ký | Xong | Ký 2026-11-19 14:30:27, hash `5137c9c0`, commit `abaffa2` (có trên `main`); Phiếu A đủ A1 đến A5 |
+| 2A Đo, rủi ro | Xong | Base `R-base-before-20261119-143130-bde05c`: pass_rate 0,9909, pass_k 0,9545, hỏng `T-002@55`; Phiếu B B0 đến B6 |
+| 2B Cổng vòng 1 | Xong | 3 cổng trong `lab10/guards.py`; `operating_gates.json` điền đủ; runbook 1 đến 3 và giờ cao điểm; 2 ticket hiểm |
+| 2C Chốt và v1 | Xong | Hash chốt `44c8d63e`; prepared `R-base-prepared-20261119-144513-5e2912`; v1 = Tiếp tục (có điều kiện: chưa kiểm trên gói sự cố) |
+| 3 Sự cố | **Chờ thẻ** | Cần số thẻ Sx từ Lab Coach ở phút 125 |
+| 4 v2 và gom bài | Chưa | |
+| 5 Demo và nộp | Chuẩn bị | `demo.md`, `demo-slides.html` (phần thẻ còn để trống) |
+
+### 8.1 Ba cổng đã code (`lab10/guards.py`, hàm `write_gate`)
+
+| # | Tool | Quy tắc | Chặn gì |
+|---|---|---|---|
+| 1 | `issue_refund` | Số tiền ≤ quyền lợi tính từ DB (tracking, nguyên nhân, chính sách hiệu lực theo ngày) trừ phần đã hoàn trong sổ cái; sai thì `deny` hoặc `modify` số tiền và người trả | Số ngày khách tự khai (`T-002@55`), lệnh cài trong ghi chú, hoàn trùng khi retry |
+| 2 | `file_carrier_fault` | Chỉ ghi khi DB ghi nguyên nhân thuộc lỗi hãng và đủ ngày; ghi đúng kiện, hãng, tài xế, số ngày; tối đa 2 lỗi tự động mỗi hãng mỗi ngày | Lỗi oan cho hãng, ghi nhầm kiện đơn nhiều kiện |
+| 3 | `notify_carrier` | Chỉ giữ các trường trong `carrier_notice_fields` của chính sách hiệu lực | Dữ liệu cá nhân (ghi chú khách, liên hệ người nhận) rời LogiX |
+
+Không có nhánh theo mã ticket hay câu chữ cụ thể (luật test ẩn).
+
+### 8.2 Con số đã đặt (`config/operating_gates.json`) và lý do
+
+| Khoá | Giá trị | Lý do |
+|---|---|---|
+| `business.daily_refund_cap_vnd` | 1.000.000 | 50% ngân sách Finance 2.000.000đ; gấp hơn 6 lần ngày thường (155.000đ) |
+| `business.cost_budget_per_ticket_vnd` | 1.200 | Dưới trần LLM 1.500đ; ticket đắt nhất 770đ |
+| `business.pilot_scope` | all | Mọi kho pass_rate 1,0 sau cổng; xem lại ở vòng 2 |
+| `operations` | PIC NV-TUNG, duyệt NV-HANH, 1 người trực, 6 ca/giờ, chờ tối đa 45 phút | Khớp `staff` và `staff_behavior.trust_conditions` |
+| `operations.decision_note` / `review_sampling_pct` | true / 10 | Điều kiện để nhân viên tin trợ lý |
+| `legal` | chặn 5 trường dữ liệu cá nhân; ghi lỗi hãng phải có nguyên nhân | Bên thứ ba: hãng, người nhận quà |
+
+### 8.3 Ba mốc đã có (bộ nền 22 ticket × 5 seed)
+
+| Chỉ số | base | prepared |
+|---|---|---|
+| pass_rate / pass_k | 0,9909 / 0,9545 | 1,0 / 1,0 |
+| Hoàn sai · lỗi oan hãng · lộ dữ liệu | 20.000đ · 1 · 0 | 0 · 0 · 0 |
+| Chi phí mỗi ticket · ROI | 4.203đ · 1,34 | 4.456đ · 1,24 |
+| Vượt trần | không | không |
+
+Cột `after` điền sau khi sửa thẻ sự cố.
+
+### 8.4 Sự cố đã gặp và cách xử lý
+
+- **Hash tiêu chí đổi do CRLF.** Git Windows bật `core.autocrlf=true`, checkout ghi file với CRLF nên hash `912faddb` thay vì `5137c9c0`. Đã tắt autocrlf cho repo này, khôi phục LF, chạy lại base. Dùng mã `…143130…`; mã `…143100…` ghi cảnh báo, không dùng làm bằng chứng.
+- **`integrity` báo lỗi** vì 19 file bị khoá ở dạng CRLF từ lúc clone. Đã đưa về LF, hiện `integrity` đạt. Không để autocrlf bật lại.
+- **Nhánh:** làm trên `demo`, đã push `origin/demo`; `main` giữ ở commit ký `abaffa2` và được merge sau. Team chấm đọc `main`, nên phải merge `demo` vào `main` trước khi nộp.
+
+### 8.5 Việc còn lại
+
+1. Phút 125: nhận thẻ Sx, ghi `Thẻ đã bốc:` ở Phiếu C và `TEAM.md`, chạy `grade --incident Sx` trước khi sửa (C0, C1).
+2. Phân tích C2 đến C6, sửa `guards.py`, `operating_gates.json`, thêm ít nhất một hàm trong `lab10/monitors.py`; chạy `eval` Sx và base, `grade`.
+3. C7 đến C11, quyết định v2 (C12), `submission/submission.json`, lệnh 7 tới `ĐỦ THÀNH PHẦN`.
+4. Điền cột `after` và phần thẻ trong `demo-slides.html`, `demo.md`.
+5. Mỗi người viết mục cá nhân trong `TEAM.md`; merge `demo` vào `main`; mỗi người nộp link repo trên LMS.
