@@ -101,7 +101,7 @@ Phiếu A mục A5 (hash `5137c9c0`); Phiếu B mục B3, B7.4, B8; Phiếu C m�
 
 ### Exit ticket
 
-*(bạn tự viết)*
+Học được cách định lượng tiêu chí chấp nhận (pass_rate, pass_k, chi phí/ticket, ROI) thay vì đánh giá cảm tính; hiểu rõ cơ chế drift dữ liệu khi chuyển schema và tầm quan trọng của việc chốt cổng kinh doanh (operating gates) đồng bộ với quy trình vận hành trước khi đưa hệ thống ra production.
 
 ## DoanSyHung-2A202603990
 
