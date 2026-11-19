@@ -22,17 +22,17 @@ Bốn câu Lab Coach sẽ hỏi (theo `problem-set.md` phần C): (1) cổng vò
 
 **Slide 3 · Mốc base (Sỹ).** "Trên bộ nền 22 ticket × 5 seed, pass_rate 0,9909 nghe rất cao, nhưng chỉ một lần hỏng, `T-002@55`, đã vi phạm hai ngưỡng an toàn: hoàn sai 20.000đ và ghi oan 1 lỗi cho hãng VNX. Khách nói trễ 5 ngày, tracking ghi 2 ngày, chính sách v3 cần 3 ngày. Đây là lỗi chìm: khách nhận tiền nên không thấy gì sai, hãng mới là người chịu."
 
-**Slide 4 · Pre-mortem và ba cổng (Sỹ).** "Pre-mortem bốn lăng kính cho ra năm lý do, chúng em chọn ba thành cổng code: một, tiền hoàn không vượt quyền lợi tính từ DB; hai, chỉ ghi lỗi hãng khi DB ghi nguyên nhân và đủ ngày; ba, chỉ gửi hãng bốn trường chính sách cho phép. Hai cổng đầu cùng một nguyên tắc: tin tracking DB, không tin lời khách."
+**Slide 4 và 5 · Cổng và ba cổng code (Sỹ).** Ở slide 4 bật công tắc cổng rồi bấm "Chạy ticket": cổng tắt thì ticket đi hết đường và ghi +30.000đ, cổng bật thì dừng ở cổng, sổ cái 0đ. "Pre-mortem bốn lăng kính cho ra năm lý do, chúng em chọn ba thành cổng code: một, tiền hoàn không vượt quyền lợi tính từ DB; hai, chỉ ghi lỗi hãng khi DB ghi nguyên nhân và đủ ngày; ba, chỉ gửi hãng bốn trường chính sách cho phép. Hai cổng đầu cùng một nguyên tắc: tin tracking DB, không tin lời khách."
 
-**Slide 5 · Ba mốc (Sỹ).** "Base hoàn sai 20.000đ, prepared về 0, không ca đúng nào bị hỏng thêm. Chi phí tăng nhẹ từ 4.203đ lên 4.456đ vì kiểm mẫu 10% và ghi chú quyết định, vẫn dưới 7.000đ. Cột after: **[ĐIỀN SAU THẺ]**."
+**Slide 6 · Ba mốc (Sỹ).** "Base hoàn sai 20.000đ, prepared về 0, không ca đúng nào bị hỏng thêm. Chi phí tăng nhẹ từ 4.203đ lên 4.456đ vì kiểm mẫu 10% và ghi chú quyết định, vẫn dưới 7.000đ. Cột after: **[ĐIỀN SAU THẺ]**."
 
-**Slide 6 · Demo trực tiếp (Tú).** Chạy hai lệnh ở phần "Lệnh demo" bên dưới. Nói: "Ticket 1: khách khai trễ 9 ngày đòi 30.000đ, DB ghi 2 ngày, cổng từ chối. Ticket 2: đơn quà tặng, khách dặn gửi số điện thoại người nhận cho hãng, hoàn đúng 20.000đ và payload gửi hãng chỉ còn bốn trường."
+**Slide 8 · Demo trực tiếp (Tú).** Chạy hai lệnh ở phần "Lệnh demo" bên dưới. Nói: "Ticket 1: khách khai trễ 9 ngày đòi 30.000đ, DB ghi 2 ngày, cổng từ chối. Ticket 2: đơn quà tặng, khách dặn gửi số điện thoại người nhận cho hãng, hoàn đúng 20.000đ và payload gửi hãng chỉ còn bốn trường."
 
-**Slide 7 · Con người và vận hành (Hưng).** "Không phải việc gì cũng là code. PIC là NV-TUNG giữ công tắc tắt, NV-HANH đứng tên duyệt. Trần hoàn tự động 1.000.000đ, bằng một nửa ngân sách Finance. Một người trực duyệt 6 ca/giờ, hạn chờ 45 phút. Runbook có ngưỡng vàng và đỏ: ví dụ hàng chờ từ 30 phút thì gọi thêm người, từ 45 phút thì thu hẹp phạm vi, từ lúc đỏ tới lúc dừng xong tối đa 15 phút."
+**Slide 7 · Con người và vận hành (Hưng), nói trước slide 8.** "Không phải việc gì cũng là code. PIC là NV-TUNG giữ công tắc tắt, NV-HANH đứng tên duyệt. Trần hoàn tự động 1.000.000đ, bằng một nửa ngân sách Finance. Một người trực duyệt 6 ca/giờ, hạn chờ 45 phút. Runbook có ngưỡng vàng và đỏ: ví dụ hàng chờ từ 30 phút thì gọi thêm người, từ 45 phút thì thu hẹp phạm vi, từ lúc đỏ tới lúc dừng xong tối đa 15 phút."
 
-**Slide 8 · Sự cố thẻ Sx (Hiệu).** **[ĐIỀN SAU THẺ]**: tác hại cho ai; nguyên nhân kỹ thuật hay con người; cổng vòng 1 đã đỡ được ô nào; phần sửa là code, con số hay người và vì sao đúng chỗ đó; chỉ số theo dõi mới.
+**Slide 9 · Sự cố thẻ Sx (Hiệu).** **[ĐIỀN SAU THẺ]**: tác hại cho ai; nguyên nhân kỹ thuật hay con người; cổng vòng 1 đã đỡ được ô nào; phần sửa là code, con số hay người và vì sao đúng chỗ đó; chỉ số theo dõi mới.
 
-**Slide 9 · Quyết định (Hiệu).** v1: Tiếp tục có điều kiện (chưa kiểm trên gói sự cố). v2: **[ĐIỀN SAU THẺ]**. Ba dòng bắt buộc: (1) một giả định môi trường có thể sai, (2) cổng chỉ giảm hay ngăn hẳn, (3) vì data là mock nên cần đo lại gì trong pilot thật.
+**Slide 10 · Quyết định (Hiệu); slide 11 là hỏi đáp.** v1: Tiếp tục có điều kiện (chưa kiểm trên gói sự cố). v2: **[ĐIỀN SAU THẺ]**. Ba dòng bắt buộc: (1) một giả định môi trường có thể sai, (2) cổng chỉ giảm hay ngăn hẳn, (3) vì data là mock nên cần đo lại gì trong pilot thật.
 
 ## Lệnh demo (chạy từ thư mục repo, nhánh đang làm bài)
 
