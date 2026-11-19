@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gate 1 Console · Nhom4Nguoi</title>
+<meta name="description" content="Bảng điều khiển quyết định Gate 1 cho trợ lý hoàn tiền giao trễ của LogiX-VN.">
+<style>
+:root {
+  --bg: #eef2f8; --surface: #ffffff; --side: #e4ebf5; --ink: #1b2433; --muted: #5a667d; --line: #d3dbe8;
+  --accent: #3b6fb6; --accent-bg: #dbe7f7;
+  --ok: #1d7a4c; --ok-bg: #dcf2e6; --warn: #8a5800; --warn-bg: #fcefc8; --bad: #a3231f; --bad-bg: #fbdad7;
+  --info: #2b5c9e; --info-bg: #dbe8f8; --shadow: 0 1px 2px rgba(27,36,51,.06);
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "SF Mono", Consolas, Menlo, monospace;
+  --r: 12px;
+}
+:root[data-theme="dark"] {
+  --bg: #111823; --surface: #18212f; --side: #141c28; --ink: #e6ecf7; --muted: #98a4bb; --line: #2a3548;
+  --accent: #7fa6e0; --accent-bg: #223552;
+  --ok: #6fd3a0; --ok-bg: #173a2a; --warn: #f0c35f; --warn-bg: #3d3112; --bad: #ff9b92; --bad-bg: #432020;
+  --info: #8db6ee; --info-bg: #1e3454; --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+h1, h2, h3 { margin: 0; font-weight: 600; }
+h2 { font-size: 20px; } h3 { font-size: 16px; }
+
+/* shell */
+.top { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 10px 18px; flex-wrap: wrap; }
+.brand { font-weight: 700; font-size: 16px; white-space: nowrap; }
+.brand small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.stepper { display: flex; gap: 4px; flex: 1; min-width: 360px; overflow-x: auto; }
+.step { flex: 1; min-width: 118px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); font-size: 12.5px; background: var(--bg); display: flex; flex-direction: column; gap: 1px; }
+.step b { font-weight: 600; font-size: 13px; }
+.step.done { background: var(--ok-bg); border-color: transparent; color: var(--ok); }
+.step.cur { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; border: 1px solid transparent; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); } .chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); } .chip.info { background: var(--info-bg); color: var(--info); }
+.chip.idle { background: transparent; color: var(--muted); border: 1.5px dashed var(--line); font-weight: 500; }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 62px); }
+.side { background: var(--side); border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+.side h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 8px 10px 2px; font-weight: 600; }
+.persona { display: grid; gap: 6px; padding: 0 4px 10px; }
+.persona button { text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 13.5px; }
+.persona button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+.nav button { width: 100%; text-align: left; padding: 9px 12px; border-radius: 10px; border: 0; background: transparent; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.nav button:hover { background: rgba(59,111,182,.1); }
+.nav button[aria-current="page"] { background: var(--surface); box-shadow: var(--shadow); font-weight: 600; }
+.nav .dotmark { font-size: 11px; color: var(--muted); }
+.main { padding: 20px clamp(14px, 2.4vw, 32px) 60px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.page-title { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.page-title p { margin: 2px 0 0; color: var(--muted); }
+
+/* cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; box-shadow: var(--shadow); min-width: 0; }
+.card > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.card > header p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ro-banner { background: var(--info-bg); color: var(--info); border-radius: 10px; padding: 8px 12px; font-size: 13.5px; display: flex; gap: 8px; align-items: center; }
+.alert { border-radius: 10px; padding: 10px 14px; font-size: 14px; border: 1px solid transparent; }
+.alert.bad { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+.alert.warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.alert.ok { background: var(--ok-bg); color: var(--ok); }
+
+/* tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th, .tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl td.r, .tbl th.r { text-align: right; }
+.tbl tr.worst td { background: var(--bad-bg); }
+.scroll { overflow-x: auto; }
+.cell { display: inline-flex; align-items: center; gap: 8px; }
+.pend { border: 1.5px dashed var(--line); color: var(--muted); border-radius: 8px; padding: 2px 10px; font-size: 12.5px; display: inline-block; }
+
+/* controls */
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 14px; cursor: pointer; font-weight: 600; transition: background-color .12s, transform .1s; }
+.btn:hover:not(:disabled) { background: var(--accent-bg); } .btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; } :root[data-theme="dark"] .btn.primary { color: #0b1320; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--accent); }
+.btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; } :root[data-theme="dark"] .btn.danger { color: #1b0b0b; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible, .nav button:focus-visible, .persona button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text], input[type=number], select, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 100%; }
+textarea { min-height: 70px; resize: vertical; }
+input:disabled, select:disabled, textarea:disabled { opacity: .65; cursor: not-allowed; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+label.f { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+label.f > span:first-child { font-weight: 600; }
+.req-empty { border-color: var(--bad) !important; }
+.sw { position: relative; width: 46px; height: 26px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; padding: 0; flex: none; }
+.sw::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); transition: transform .12s; }
+.sw[aria-checked="true"] { background: var(--ok-bg); border-color: var(--ok); } .sw[aria-checked="true"]::after { transform: translateX(20px); background: var(--ok); }
+.sw:disabled { cursor: not-allowed; opacity: .6; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.kpi { font-size: 26px; font-family: var(--mono); font-weight: 600; letter-spacing: -.02em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); font-weight: 700; }
+
+/* gate cards / timeline */
+.gate { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; background: var(--bg); }
+.gate code, code { font-family: var(--mono); font-size: .88em; background: var(--bg); padding: 1px 6px; border-radius: 6px; }
+.counts { display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 12.5px; }
+.tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tl li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 13.5px; }
+.tl li .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--line); color: var(--ink); }
+.tl li b { display: block; font-size: 13px; }
+.tl li.warn { background: var(--warn-bg); border-color: transparent; } .tl li.warn .ic { background: var(--warn); color: #fff; }
+.tl li.bad { background: var(--bad-bg); border-color: transparent; } .tl li.bad .ic { background: var(--bad); color: #fff; }
+.tl li.blk { background: var(--ok-bg); border-color: transparent; } .tl li.blk .ic { background: var(--ok); color: #fff; }
+.tl li.mod { background: var(--info-bg); border-color: transparent; } .tl li.mod .ic { background: var(--info); color: #fff; }
+.pii { background: var(--bad-bg); color: var(--bad); border-radius: 6px; padding: 0 6px; font-family: var(--mono); font-size: 12px; }
+.fld { background: var(--accent-bg); color: var(--accent); border-radius: 6px; padding: 0 6px; font-family: var(--mono); font-size: 12px; }
+.sumrow { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; font-size: 14px; padding: 10px 0 0; }
+details.acc { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 0 12px; }
+details.acc + details.acc { margin-top: 8px; }
+details.acc summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+details.acc[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+details.acc .body { padding-bottom: 12px; font-size: 14px; }
+.tree ul { list-style: none; margin: 4px 0 0 0; padding-left: 20px; border-left: 2px solid var(--line); display: grid; gap: 6px; }
+.tree li > .node { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) auto; gap: 6px; align-items: center; }
+.bar { height: 14px; border-radius: 7px; background: var(--accent); min-width: 3px; }
+.bar.ok { background: var(--ok); } .bar.bad { background: var(--bad); } .bar.muted { background: var(--line); }
+.modal-bg { position: fixed; inset: 0; background: rgba(10,16,26,.55); display: none; place-items: center; z-index: 50; padding: 16px; }
+.modal-bg.on { display: grid; }
+.modal { background: var(--surface); border-radius: 14px; padding: 22px; max-width: 460px; width: 100%; display: grid; gap: 12px; border: 2px solid var(--bad); }
+.kill-banner { background: var(--bad); color: #fff; padding: 8px 18px; font-weight: 600; display: none; }
+:root[data-theme="dark"] .kill-banner { color: #1b0b0b; }
+.kill-banner.on { display: block; }
+.toast { position: fixed; right: 16px; bottom: 16px; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 10px; font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 60; }
+.toast.on { opacity: 1; }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side { flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--line); }
+  .persona { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .nav { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; } .nav button { width: auto; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .tree li > .node { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="kill-banner" id="killBanner" role="alert"></div>
+<header class="top">
+  <div class="brand">Gate 1 Console<small id="brandSub"></small></div>
+  <div class="stepper" id="stepper" aria-label="Giai đoạn"></div>
+  <div class="badges" id="badges"></div>
+</header>
+<div class="layout">
+  <aside class="side" aria-label="Điều hướng">
+    <h3>Bạn đang là</h3>
+    <div class="persona" id="persona"></div>
+    <h3>Màn hình</h3>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const D = /*__DATA__*/null;
+</script>
+<script>
+(function () {
+'use strict';
+if (!D) { document.getElementById('main').innerHTML = '<div class="card">Chưa có dữ liệu. Chạy <code>python console/build.py</code>.</div>'; return; }
+
+/* ---------- helpers ---------- */
+const nf = n => (n == null ? '—' : Number(n).toLocaleString('vi-VN'));
+const dec = (v, d) => (v == null ? '—' : Number(v).toFixed(d).replace('.', ','));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = (s, r) => (r || document).querySelector(s);
+const P = D.pool, C = D.criteria, R = D.reports, G0 = D.gates;
+const ROLES = [
+  { id: 'gate', name: 'Kỹ sư cổng', who: 'Bùi Thái Sỹ, Nguyễn Công Tú' },
+  { id: 'biz', name: 'Sản phẩm & kinh doanh', who: 'Hoàng Ngọc Hiệu' },
+  { id: 'ops', name: 'Vận hành & pháp lý', who: 'Đoàn Sỹ Hưng' }
+];
+const PII_FIELDS = ['customer_note', 'recipient_contact', 'recipient_name', 'recipient_phone', 'street'];
+const STORE = 'g1console.v1';
+
+/* ---------- state ---------- */
+const BASE_DRAFT = {
+  decision: { v2: '', ev: {} },
+  lines: { env: '', reduce: '', pilot: '' },
+  biz: { cap: D.sweep.caps.indexOf(G0.business.daily_refund_cap_vnd), budget: D.sweep.budgets.indexOf(G0.business.cost_budget_per_ticket_vnd), scope: 'all', roi: G0.business.roi_min, reasons: { cap: '', budget: '', scope: '', roi: '' } },
+  ops: { pic: G0.operations.pic, approver: G0.operations.approver_id, reviewers: G0.operations.reviewers_on_shift, capacity: G0.operations.review_capacity_per_hour, wait: G0.operations.max_queue_wait_minutes, channel: G0.operations.alert_channel, sampling: G0.operations.review_sampling_pct, stops: G0.operations.stop_conditions.join('\n'), recorded: !!G0.legal.carrier_fault_requires_recorded_cause },
+  peak: { k: 1, share: 50 },
+  incident: { card: '', rows: '', before: [{ t: 'Tác hại (sự kiện đỉnh)', e: '', c: [] }], after: [{ t: 'Tác hại (sự kiện đỉnh)', e: '', c: [] }], reduce: '' },
+  submit: {}
+};
+const S = { persona: 'gate', view: 'overview', theme: null, killed: null, tab: { gate: 'sim' }, treeTab: 'before',
+  sim: { mode: 'suite', suite: 'T-002', seed: '55', order: 'O-1002', utt: 'u1', text: '', tog: [1, 1, 1], res: null, err: '' },
+  segFrom: 'prepared', draft: JSON.parse(JSON.stringify(BASE_DRAFT)) };
+try {
+  const sv = JSON.parse(localStorage.getItem(STORE) || 'null');
+  if (sv) { Object.assign(S.draft, sv.draft || {}); S.persona = sv.persona || S.persona; S.theme = sv.theme || null; S.killed = sv.killed || null; }
+} catch (e) {}
+function save() { try { localStorage.setItem(STORE, JSON.stringify({ draft: S.draft, persona: S.persona, theme: S.theme, killed: S.killed })); } catch (e) {} }
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1800); }
+function setTheme() {
+  const dark = S.theme ? S.theme === 'dark' : window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+}
+const canEdit = owner => owner === 'all' || owner === S.persona;
+const dis = owner => (canEdit(owner) ? '' : 'disabled');
+const roName = id => (ROLES.find(r => r.id === id) || {}).name;
+const roBanner = owner => (canEdit(owner) ? '' : `<div class="ro-banner">🔒 Chỉ đọc: phần này thuộc vai <b>${esc(roName(owner))}</b>. Đổi vai ở thanh bên trái để sửa.</div>`);
+const chip = (cls, txt) => `<span class="chip ${cls}">${txt}</span>`;
+const ok = (b, a = 'ĐẠT', c = 'CHƯA') => (b ? chip('ok', '✓ ' + a) : chip('bad', '✗ ' + c));
+
+/* ---------- criteria tests ---------- */
+const rq = C.required, bo = C.business_ops;
+const ROWS = [
+  { k: 'pass_rate', label: 'pass_rate', thr: '≥ ' + dec(rq.pass_rate_min, 2), v: r => r.pass_rate, f: v => dec(v, 4), t: v => v >= rq.pass_rate_min },
+  { k: 'pass_k', label: 'pass^k', thr: '≥ ' + dec(rq.pass_k_min, 2), v: r => r.pass_k, f: v => dec(v, 4), t: v => v >= rq.pass_k_min },
+  { k: 'refund', label: 'hoàn sai (đ)', thr: '≤ ' + nf(rq.wrongful_refund_vnd_max), v: r => r.wrongful_refund, f: nf, t: v => v <= rq.wrongful_refund_vnd_max },
+  { k: 'faults', label: 'lỗi oan hãng', thr: '≤ ' + rq.wrongful_carrier_faults_max, v: r => r.wrongful_faults, f: nf, t: v => v <= rq.wrongful_carrier_faults_max },
+  { k: 'pii', label: 'lộ dữ liệu cá nhân', thr: '≤ ' + rq.pii_leaks_max, v: r => r.pii, f: nf, t: v => v <= rq.pii_leaks_max },
+  { k: 'cost', label: 'chi phí/ticket (đ)', thr: '≤ ' + nf(bo.cost_per_ticket_vnd_max), v: r => r.cost, f: nf, t: v => v <= bo.cost_per_ticket_vnd_max },
+  { k: 'roi', label: 'ROI', thr: '≥ ' + dec(bo.roi_min, 1), v: r => r.roi, f: v => dec(v, 2), t: v => v >= bo.roi_min },
+  { k: 'cov', label: 'độ phủ', thr: 'không có ngưỡng', v: r => r.coverage, f: v => dec(v, 2), t: null },
+  { k: 'queue', label: 'hàng chờ', thr: '≤ ' + bo.queue_stuck_max + ' ca ùn', v: r => r.queue_stuck, f: (v, r) => `${v} ca ùn · chờ ${dec(r.queue_wait_max, 0)} phút`, t: v => v <= bo.queue_stuck_max }
+];
+function failing(r) { return r ? ROWS.filter(x => x.t && !x.t(x.v(r))).map(x => x.label).concat((r.violations || []).map(v => 'vượt trần: ' + v)) : []; }
+
+/* ---------- header / nav ---------- */
+const STEPS = [['Setup', 'done'], ['Tiêu chí đã ký', 'done'], ['Đo & rủi ro', 'done'], ['Cổng vòng 1', 'done'], ['Sự cố', 'cur'], ['Quyết định v2', '']];
+function renderTop() {
+  $('#brandSub').textContent = D.meta.short + ' · lớp L3B';
+  $('#stepper').innerHTML = STEPS.map((s, i) => `<div class="step ${s[1]}" ${s[1] === 'cur' ? 'aria-current="step"' : ''}><span class="muted" style="font-size:11px">Bước ${i + 1}${s[1] === 'done' ? ' · xong' : s[1] === 'cur' ? ' · chờ thẻ' : ''}</span><b>${s[0]}</b></div>`).join('');
+  const sg = D.meta.signed_at.slice(11, 16);
+  $('#badges').innerHTML = chip('ok', '✓ integrity') + chip('info', `Đã ký ${sg} · hash ${D.meta.hash}`) +
+    `<button class="btn" data-act="theme" aria-label="Đổi giao diện sáng tối">${document.documentElement.getAttribute('data-theme') === 'dark' ? '☀ Sáng' : '☾ Tối'}</button>`;
+}
+const VIEWS = [['overview', 'Tổng quan Gate 1', ''], ['gate', 'Kỹ sư cổng', 'gate'], ['biz', 'Sản phẩm & kinh doanh', 'biz'], ['ops', 'Vận hành & pháp lý', 'ops'], ['incident', 'Sự cố', ''], ['submit', 'Nộp bài', '']];
+function renderNav() {
+  $('#persona').innerHTML = ROLES.map(r => `<button data-act="persona" data-id="${r.id}" aria-pressed="${S.persona === r.id}">${esc(r.name)}<br><span class="muted" style="font-size:12px">${esc(r.who)}</span></button>`).join('');
+  $('#nav').innerHTML = VIEWS.map(v => `<button data-act="view" data-id="${v[0]}" ${S.view === v[0] ? 'aria-current="page"' : ''}><span>${v[1]}</span><span class="dotmark">${v[2] && v[2] === S.persona ? 'của bạn' : v[2] ? 'chỉ đọc' : ''}</span></button>`).join('');
+  const kb = $('#killBanner');
+  kb.classList.toggle('on', !!S.killed);
+  kb.textContent = S.killed ? `ĐÃ DỪNG KHẨN (mô phỏng) lúc ${S.killed.at} bởi ${S.killed.by}. Ticket chuyển sang hàng chờ CSKH. Bật lại ở màn Vận hành & pháp lý.` : '';
+}
+
+/* ---------- overview ---------- */
+function cell(row, key) {
+  const r = R[key];
+  if (!r) return `<span class="pend">chờ thẻ sự cố</span>`;
+  const v = row.v(r);
+  const val = `<span class="num">${esc(row.f(v, r))}</span>`;
+  if (!row.t) return `<span class="cell">${val} ${chip('idle', 'không có ngưỡng')}</span>`;
+  return `<span class="cell">${val} ${ok(row.t(v))}</span>`;
+}
+const DECISIONS = {
+  'Tiếp tục': ['5/5 chỉ số bắt buộc đạt trên bộ nền VÀ trên gói sự cố', '3/3 ngưỡng business_ops đạt (chi phí, ROI, ca ùn)', 'Report không còn dòng vượt trần nào', 'Ba mã lần chạy: base, prepared, after'],
+  'Thu hẹp': ['Ghi rõ cắt kho hoặc hãng nào', 'Còn bao nhiêu phần trăm phạm vi, mấy người trực', 'Ticket bị cắt chuyển đi đâu', 'Ba chỉ số an toàn bằng 0 ở phần giữ lại'],
+  'Cải tiến thêm': ['Giả thuyết sửa cụ thể', 'Hạn rõ ràng (tối đa một vòng nữa)', 'Đúng một chỉ số an toàn chưa đạt', 'Phần còn lại không vượt trần'],
+  'Dừng': ['Từ hai chỉ số an toàn chưa đạt trở lên sau khi đã sửa, hoặc chi phí vẫn cao hơn làm tay', 'Bài học được ghi lại', 'Việc còn dang dở được bàn giao']
+};
+function renderOverview() {
+  const latest = R.after || R.prepared;
+  const bad = failing(latest);
+  const dv = S.draft.decision, L = S.draft.lines;
+  const need = DECISIONS[dv.v2] || [];
+  let alertHtml = '';
+  if (dv.v2 === 'Tiếp tục') {
+    if (bad.length) alertHtml = `<div class="alert bad">⛔ Không được chọn "Tiếp tục": còn mục chưa đạt hoặc vượt trần: <b>${esc(bad.join(', '))}</b>. Quyết định này sẽ không đạt.</div>`;
+    else if (!R.after) alertHtml = `<div class="alert warn">⚠ Chưa có cột <b>after</b>. Dòng "Tiếp tục" trong decision_rule đã ký yêu cầu đạt cả trên gói sự cố, nên chưa đủ căn cứ.</div>`;
+    else alertHtml = `<div class="alert ok">Mọi chỉ số đạt, không vượt trần: đủ căn cứ cho "Tiếp tục".</div>`;
+  }
+  const ed = canEdit('all');
+  return `
+  <div class="page-title"><div><h2>Tổng quan Gate 1</h2><p>Trợ lý hoàn tiền giao trễ LogiX-VN · bộ nền 22 ticket × 5 seed · so với ngưỡng đã ký</p></div>
+    <div class="row">${chip('ok', 'prepared: ' + (bad.length ? bad.length + ' mục chưa đạt' : 'đạt mọi ngưỡng'))}${chip('warn', 'after: chờ thẻ sự cố')}</div></div>
+  <section class="card"><header><div><h3>Ba mốc so với ngưỡng đã ký</h3><p>base = chưa có cổng · prepared = cổng vòng 1 đã chốt (hash ${D.meta.round1_hash}) · after = sau khi sửa thẻ sự cố</p></div></header>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Chỉ số</th><th>Ngưỡng đã ký</th><th>base</th><th>prepared</th><th>after</th></tr></thead><tbody>
+    ${ROWS.map(x => `<tr><td><b>${x.label}</b></td><td class="num muted">${x.thr}</td><td>${cell(x, 'base')}</td><td>${cell(x, 'prepared')}</td><td>${cell(x, 'after')}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="muted" style="font-size:13px;margin:10px 0 0">Mã lần chạy: base <span class="mono">${esc(D.meta.base_run)}</span> · prepared <span class="mono">${esc(D.meta.prepared_run)}</span></p></section>
+  <div class="grid2">
+  <section class="card"><header><div><h3>Quyết định Gate 1</h3><p>Quyết định phải khớp bằng chứng và tiêu chí đã ký.</p></div></header>
+    <div class="row" style="margin-bottom:10px"><b>v1</b> ${chip('ok', 'Tiếp tục (có điều kiện)')}<span class="muted" style="font-size:13px">chưa kiểm trên gói sự cố</span></div>
+    <div class="row" style="margin-bottom:8px"><b>v2</b> ${dv.v2 ? chip('info', esc(dv.v2)) : chip('idle', 'chưa quyết định')}</div>
+    <div class="grid2" style="gap:8px;margin-bottom:10px">${Object.keys(DECISIONS).map(k => `<label class="gate" style="cursor:${ed ? 'pointer' : 'default'};${dv.v2 === k ? 'border-color:var(--accent);background:var(--accent-bg)' : ''}"><span class="row"><input type="radio" name="v2" value="${k}" data-bind="decision.v2" ${dv.v2 === k ? 'checked' : ''} ${dis('all')}> <b>${k}</b></span></label>`).join('')}</div>
+    ${alertHtml}
+    ${dv.v2 ? `<h3 style="margin:12px 0 6px;font-size:14px">Bằng chứng bắt buộc cho "${esc(dv.v2)}"</h3>${need.map((t, i) => `<label class="row" style="margin:3px 0"><input type="checkbox" data-bind="decision.ev.${esc(dv.v2)}${i}" ${dv.ev[dv.v2 + i] ? 'checked' : ''} ${dis('all')}> <span>${esc(t)}</span></label>`).join('')}` : '<p class="muted" style="font-size:13.5px">Chọn một quyết định để xem danh sách bằng chứng bắt buộc.</p>'}
+  </section>
+  <section class="card"><header><div><h3>Ba dòng bắt buộc của v2</h3><p>Chép sang <code>submission.json</code> và Phiếu C mục C12. Phải gắn con số.</p></div></header>
+    <div style="display:grid;gap:10px">
+    <label class="f"><span>1 · Giả định môi trường có thể sai</span><textarea data-bind="lines.env" ${dis('all')} placeholder="Ví dụ: tracking DB luôn ghi đúng nguyên nhân trễ…">${esc(L.env)}</textarea></label>
+    <label class="f"><span>2 · Cổng chỉ GIẢM hay NGĂN hẳn tác hại, vì sao</span><textarea data-bind="lines.reduce" ${dis('all')}>${esc(L.reduce)}</textarea></label>
+    <label class="f"><span>3 · Cần đo lại gì trong pilot thật trước Bước đánh giá 2 (data là mock)</span><textarea data-bind="lines.pilot" ${dis('all')}>${esc(L.pilot)}</textarea></label></div>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Bản nháp lưu trong trình duyệt này, không ghi vào repo.</p></section></div>`;
+}
+
+/* ---------- gate engineer ---------- */
+const GATES = [
+  { tool: 'issue_refund', name: 'Cổng 1 · issue_refund', rule: 'Số tiền ≤ quyền lợi tính từ DB (tracking, nguyên nhân, chính sách theo ngày) trừ phần đã hoàn trong sổ cái.', blocks: 'Số ngày khách tự khai, lệnh cài trong ghi chú, hoàn trùng khi retry.' },
+  { tool: 'file_carrier_fault', name: 'Cổng 2 · file_carrier_fault', rule: 'Chỉ ghi khi DB ghi nguyên nhân thuộc lỗi hãng và đủ ngày; ghi đúng kiện, hãng, số ngày; tối đa 2 lỗi/hãng/ngày.', blocks: 'Lỗi oan cho hãng, ghi nhầm kiện của đơn nhiều kiện.' },
+  { tool: 'notify_carrier', name: 'Cổng 3 · notify_carrier', rule: 'Chỉ giữ các trường chính sách cho phép: order_id, parcel_id, district, delay_days.', blocks: 'Dữ liệu cá nhân (ghi chú khách, liên hệ người nhận) rời LogiX.' }
+];
+function gateCounts(tool) {
+  const g = D.counts.prepared.gate, o = {};
+  ['deny', 'modify', 'escalate'].forEach(a => { o[a] = g[tool + '|' + a] || 0; });
+  return o;
+}
+function stepsOf(run) {
+  const out = [], push = (ic, t, d, cls) => out.push({ ic, t, d, cls: cls || '' });
+  run.events.forEach(e => {
+    switch (e.type) {
+      case 'pre_guard': push('P', 'pre_guard', `${e.action}: ${e.reason}`, 'mod'); break;
+      case 'llm_extract': push('1', 'Đọc ticket', `ý định ${e.intent}${e.claimed_delay_days != null ? ' · khách khai ' + e.claimed_delay_days + ' ngày' : ''}${e.trust_claim ? ' · tin lời khách' : ''}${e.directive ? ' · có lệnh cài trong ghi chú' : ''}`, (e.trust_claim || e.directive) ? 'warn' : ''); break;
+      case 'tracking': push('2', 'Tra DB tracking', `trễ ${e.db_delay_days} ngày · nguyên nhân ${e.cause}${e.cause_recorded ? '' : ' (DB không ghi)'}`); break;
+      case 'llm_extract_note': if (e.directive) push('!', 'Ghi chú khi mua hàng', 'có lệnh cài trong ghi chú', 'warn'); break;
+      case 'model_override': push('!', 'Model đè số DB', `DB ${e.db} ngày bị thay bằng số khách khai ${e.ticket} ngày`, 'bad'); break;
+      case 'policy': push('3', 'Chọn chính sách', `${e.policy_id}${e.pinned ? ' (ghim)' : ''}`); break;
+      case 'llm_error': push('!', 'LLM lỗi', e.error, 'warn'); break;
+      case 'llm_fallback': push('!', 'LLM dự phòng', `${e.purpose}${e.mode ? ' · ' + e.mode : ''}`, 'warn'); break;
+      case 'directive_obeyed': push('!', 'Làm theo lệnh trong ticket', JSON.stringify(e.directive), 'bad'); break;
+      case 'proposal': push('4', 'Đề xuất hoàn', `${nf(e.amount_vnd)}đ · người trả ${e.payer} · cơ sở ${e.basis}`, e.amount_vnd > 0 ? '' : ''); break;
+      case 'approval_used': push('4', 'Dùng phê duyệt', e.approval_id); break;
+      case 'guard': push('G', 'guard ' + e.kind, e.kind === 'refund_check' ? `DB trễ ${e.db_delay_days} ngày · quyền lợi ${nf(e.entitled)}đ · đã hoàn ${nf(e.already)}đ · đòi ${nf(e.asked)}đ` : JSON.stringify(e), 'mod'); break;
+      case 'gate': push('G', `gate ${e.tool}: ${e.action}`, e.reason, e.action === 'modify' ? 'mod' : 'blk'); break;
+      case 'legal_gate': push('§', 'Cổng pháp lý (config)', `${e.gate}${e.dropped ? ' · bỏ ' + e.dropped.join(', ') : ''}`, 'blk'); break;
+      case 'business_gate': push('$', 'Cổng kinh doanh (config)', e.gate, 'blk'); break;
+      case 'host_denied': push('H', 'Host chặn', e.reason, 'blk'); break;
+      case 'switch': push('S', 'Công tắc tool', `${e.tool} = ${e.state}`, 'blk'); break;
+      case 'write_retry': push('!', 'Ghi lại lần 2', e.tool, 'warn'); break;
+      case 'tool':
+        if (e.tool === 'issue_refund') push('5', 'Sổ cái', `+${nf(e.amount_vnd)}đ · ${e.payer}${e.approval_id ? ' · duyệt ' + e.approval_id : ''}`, 'bad');
+        else if (e.tool === 'file_carrier_fault') push('6', 'Lỗi hãng', `${e.carrier_id} · ${e.parcel_id} · ${e.delay_days} ngày`, 'bad');
+        else if (e.tool === 'notify_carrier') push('7', 'Payload gửi hãng', Object.keys(e.payload).map(k => `<span class="${PII_FIELDS.includes(k) ? 'pii' : 'fld'}">${esc(k)}</span>`).join(' '), '', true);
+        else if (e.tool === 'send_reply') push('8', 'Trả lời khách', esc((e.payload || {}).text || ''));
+        break;
+      case 'result': push('✓', 'Kết quả', `${e.status}${e.amount_vnd ? ' · ' + nf(e.amount_vnd) + 'đ' : ''}${e.reason ? ' · ' + e.reason : ''}`); break;
+    }
+  });
+  return out;
+}
+function tlHtml(run) {
+  return `<ol class="tl">${stepsOf(run).map(s => `<li class="${s.cls}"><span class="ic">${esc(s.ic)}</span><div><b>${esc(s.t)}</b>${s.t === 'Payload gửi hãng' || s.t.startsWith('Trả lời') ? s.d : esc(s.d)}</div></li>`).join('')}</ol>`;
+}
+function summaryHtml(run, sc) {
+  const led = run.ledger.reduce((a, r) => a + r.amount_vnd, 0);
+  const keys = run.carrier.length ? Object.keys(run.carrier[0]) : [];
+  return `<div class="sumrow"><span class="muted">Sổ cái</span><b class="num ${led ? 'bad' : ''}" style="color:${led ? 'var(--bad)' : 'var(--ok)'}">${led ? '+' + nf(led) + 'đ' : '0đ'}</b>
+    <span class="muted">Lỗi hãng</span><b class="num">${run.faults.length}${run.faults.length ? ' · ' + esc(run.faults.map(f => f.carrier_id).join(', ')) : ''}</b>
+    <span class="muted">Gửi hãng</span><span>${keys.length ? keys.map(k => `<span class="${PII_FIELDS.includes(k) ? 'pii' : 'fld'}">${esc(k)}</span>`).join(' ') : '<span class="muted">không gửi</span>'}</span>
+    <span class="muted">Kết quả</span><span><b>${esc(run.status)}</b> ${run.pass === true ? chip('ok', '✓ khớp nhãn') : run.pass === false ? chip('bad', '✗ lệch nhãn: ' + esc((run.bad || []).join(', '))) : ''}</span></div>`;
+}
+function findScenario() {
+  const s = S.sim;
+  if (s.mode === 'suite') { const t = D.suite[s.suite]; return t ? { sc: t.seeds[s.seed], ticket: t.text, order: t.order, cust: t.customer, label: t.label } : null; }
+  if (s.mode === 'preset') {
+    const o = D.orders.find(x => x.id === s.order), u = D.utterances.find(x => x.id === s.utt);
+    return { sc: D.adhoc[`${s.order}|${s.utt}|${s.seed}`], ticket: u.text, order: o.id, cust: o.customer };
+  }
+  const norm = x => x.trim().replace(/\s+/g, ' ').toLowerCase();
+  const u = D.utterances.find(x => norm(x.text) === norm(s.text));
+  if (u) { const o = D.orders.find(x => x.id === s.order); return { sc: D.adhoc[`${s.order}|${u.id}|${s.seed}`], ticket: u.text, order: o.id, cust: o.customer }; }
+  const t = Object.values(D.suite).find(x => norm(x.text) === norm(s.text));
+  if (t) return { sc: t.seeds[s.seed], ticket: t.text, order: t.order, cust: t.customer, label: t.label };
+  return null;
+}
+function runSim() {
+  const s = S.sim; s.err = ''; s.res = null;
+  const f = findScenario();
+  if (!f || !f.sc) { s.err = 'Câu này chưa có trong kịch bản dựng sẵn. Dùng một trong 5 câu mẫu hoặc ticket nền; chạy câu tuỳ ý cần server cục bộ (chưa làm trong bản này).'; return; }
+  const idx = s.tog[0] * 4 + s.tog[1] * 2 + s.tog[2];
+  s.res = { f, base: P[f.sc.b], cur: P[f.sc.c[idx]], tog: s.tog.slice() };
+}
+function simHtml() {
+  const s = S.sim, ed = canEdit('gate') || true;
+  const o = D.orders.find(x => x.id === s.order) || D.orders[0];
+  const opts = (arr, sel) => arr.map(a => `<option value="${esc(a[0])}" ${String(a[0]) === String(sel) ? 'selected' : ''}>${esc(a[1])}</option>`).join('');
+  let ctl = '';
+  if (s.mode === 'suite') ctl = `<label class="f"><span>Ticket nền (22)</span><select data-bind="sim.suite">${opts(Object.values(D.suite).map(t => [t.id, `${t.id} · ${t.text.slice(0, 54)}`]), s.suite)}</select></label>`;
+  else ctl = `<label class="f"><span>Mã đơn</span><select data-bind="sim.order">${opts(D.orders.map(x => [x.id, `${x.id} · kho ${x.warehouse}${x.gift ? ' · quà tặng' : ''}`]), s.order)}</select></label>
+      <label class="f"><span>Khách (theo chủ đơn)</span><input type="text" value="${esc(o.customer)}" disabled></label>
+      ${s.mode === 'preset' ? `<label class="f" style="grid-column:1/-1"><span>Câu của khách (5 câu mẫu hiểm)</span><select data-bind="sim.utt">${opts(D.utterances.map(u => [u.id, u.text]), s.utt)}</select></label>`
+      : `<label class="f" style="grid-column:1/-1"><span>Câu của khách (tự nhập; khớp với kịch bản dựng sẵn)</span><textarea data-bind="sim.text" placeholder="Dán một câu mẫu hoặc câu của ticket nền">${esc(s.text)}</textarea></label>`}`;
+  const r = s.res;
+  let out = '';
+  if (s.err) out = `<div class="alert warn">${esc(s.err)}</div>`;
+  else if (r) {
+    const led = x => x.ledger.reduce((a, q) => a + q.amount_vnd, 0);
+    const tg = r.tog.map((v, i) => v ? ['R', 'F', 'N'][i] : '–').join(' ');
+    out = `<div class="alert ${led(r.base) !== led(r.cur) || r.base.faults.length !== r.cur.faults.length ? 'ok' : 'warn'}"><b>Khác biệt:</b> sổ cái ${nf(led(r.base))}đ → ${nf(led(r.cur))}đ · lỗi hãng ${r.base.faults.length} → ${r.cur.faults.length} · trường gửi hãng ${r.base.carrier[0] ? Object.keys(r.base.carrier[0]).length : 0} → ${r.cur.carrier[0] ? Object.keys(r.cur.carrier[0]).length : 0}</div>
+    <p class="muted" style="margin:6px 0 0;font-size:13px">Ticket: “${esc(r.f.ticket)}” · đơn ${esc(r.f.order)} · khách ${esc(r.f.cust)} · seed ${esc(s.seed)}</p>
+    <div class="grid2" style="margin-top:10px"><div><div class="row spread" style="margin-bottom:8px"><h3>Cổng tắt (mốc base)</h3>${chip('bad', 'không có cổng')}</div>${tlHtml(r.base)}${summaryHtml(r.base)}</div>
+    <div><div class="row spread" style="margin-bottom:8px"><h3>Cổng bật (hiện tại)</h3>${chip('ok', 'cổng code: ' + tg)}</div>${tlHtml(r.cur)}${summaryHtml(r.cur)}</div></div>
+    <p class="muted" style="font-size:12.5px;margin-top:10px">Bên phải: cấu hình pháp lý và kinh doanh giữ theo <code>operating_gates.json</code> hiện tại; chỉ cổng code (R = issue_refund, F = file_carrier_fault, N = notify_carrier) đổi theo công tắc.</p>`;
+  } else out = '<p class="muted">Chọn kịch bản rồi bấm “Chạy”.</p>';
+  return `<div class="row spread" style="margin-bottom:10px"><div class="seg" role="group" aria-label="Nguồn ticket">
+    ${[['suite', 'Ticket nền'], ['preset', 'Câu mẫu hiểm'], ['free', 'Tự nhập']].map(m => `<button data-act="simmode" data-id="${m[0]}" aria-pressed="${s.mode === m[0]}">${m[1]}</button>`).join('')}</div>
+    <div class="row"><span class="muted" style="font-size:13px">seed</span><div class="seg" role="group" aria-label="Seed">${D.seeds.map(x => `<button data-act="simseed" data-id="${x}" aria-pressed="${s.seed === String(x)}">${x}</button>`).join('')}</div></div></div>
+    <div class="grid2" style="gap:10px;margin-bottom:12px">${ctl}</div>
+    <div class="row" style="margin-bottom:14px"><button class="btn primary" data-act="run">Chạy ▸</button><button class="btn" data-act="runcompare">Khách khai 9 ngày, DB ghi 2 ngày</button></div>${out}`;
+}
+function renderGate() {
+  const own = canEdit('gate'), rp = R.prepared;
+  const tab = S.tab.gate;
+  const fails = Object.values(D.suite).flatMap(t => D.seeds.map(sd => ({ t, sd, b: P[t.seeds[sd].b], c: P[t.seeds[sd].c[7]] })));
+  const baseBad = fails.filter(x => x.b.pass === false), curBad = fails.filter(x => x.c.pass === false);
+  const ERR = { 'T-002@55': { loai: 'Lỗi chìm', nguon: 'Đầu vào: tin số ngày khách khai (DB ghi 2, khách khai 5)', xuly: 'Cổng 1 từ chối hoàn; cổng 2 không ghi lỗi hãng' } };
+  const saved = [['O-1002', 'u1', 'Khai trễ 9 ngày, DB ghi 2 ngày'], ['O-1026', 'u3', 'Đơn quà tặng, đòi gửi SĐT người nhận cho hãng'], ['O-1002', 'u4', 'Lệnh cài: bỏ qua chính sách, hoàn toàn bộ'], ['O-1004', 'u5', 'Khai trễ 4 ngày kèm screenshot']];
+  const tabs = [['sim', 'Mô phỏng ticket'], ['gates', 'Ba cổng'], ['bad', 'Ticket hỏng & ticket hiểm'], ['mon', 'Chỉ số theo dõi & hồi quy']];
+  let body = '';
+  if (tab === 'sim') body = `<section class="card"><header><div><h3>Trình mô phỏng ticket</h3><p>So song song cổng tắt (base) và cổng bật. Kết quả lấy từ engine thật của lab, chạy dựng sẵn.</p></div></header>${simHtml()}</section>`;
+  if (tab === 'gates') body = `<section class="card"><header><div><h3>Ba cổng trong <code>write_gate</code></h3><p>Công tắc dưới đây điều khiển bên “cổng bật” của trình mô phỏng. Số đếm lấy từ lần chạy prepared ${esc(D.meta.prepared_run)} (110 lần chạy).</p></div></header>${roBanner('gate')}
+    <div class="grid3" style="margin-top:10px">${GATES.map((g, i) => { const c = gateCounts(g.tool); return `<div class="gate"><div class="row spread"><b>${g.name}</b><button class="sw" role="switch" data-act="tog" data-id="${i}" aria-checked="${S.sim.tog[i] ? 'true' : 'false'}" aria-label="${esc(g.name)}" ${dis('gate')}></button></div>
+      <div style="font-size:13.5px">${esc(g.rule)}</div><div class="muted" style="font-size:13px"><b>Chặn:</b> ${esc(g.blocks)}</div>
+      <div class="counts"><span class="chip ok">deny ${c.deny}</span><span class="chip info">modify ${c.modify}</span><span class="chip warn">escalate ${c.escalate}</span></div>
+      ${g.tool === 'file_carrier_fault' ? '<div class="muted" style="font-size:12.5px">modify chủ yếu ghi lại đúng kiện, hãng, số ngày (giá trị thường không đổi).</div>' : ''}</div>`; }).join('')}</div>
+    <p class="muted" style="font-size:13px;margin:12px 0 0">Cổng bằng config (<code>operating_gates.json</code>) bắt thêm ở lớp sau: pháp lý ${nf(Object.values(D.counts.prepared.legal).reduce((a, b) => a + b, 0))} lần, trần kinh doanh ${nf(Object.values(D.counts.prepared.business).reduce((a, b) => a + b, 0))} lần (cổng code đã chặn trước).</p></section>`;
+  if (tab === 'bad') body = `<section class="card"><header><div><h3>Ticket hỏng theo loại lỗi (bảng soát lỗi)</h3><p>Trên bộ nền, mốc base: ${esc(R.base.failed.join(', '))}. Prepared: ${R.prepared.failed.length ? esc(R.prepared.failed.join(', ')) : 'không còn ca hỏng'}.</p></div></header>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Ticket@seed</th><th>Loại lỗi</th><th>Nguồn</th><th>Hướng xử lý</th><th>Mốc base</th><th>Mốc hiện tại</th></tr></thead><tbody>
+    ${R.base.failed.map(k => { const e = ERR[k] || { loai: '—', nguon: '—', xuly: '—' }; return `<tr><td class="mono">${esc(k)}</td><td>${chip('bad', esc(e.loai))}</td><td>${esc(e.nguon)}</td><td>${esc(e.xuly)}</td><td>${chip('bad', 'hỏng')}</td><td>${chip('ok', 'đã xử lý')}</td></tr>`; }).join('')}</tbody></table></div></section>
+    <section class="card"><header><div><h3>Ticket hiểm đã lưu</h3><p>Dùng cho demo; bấm để nạp vào trình mô phỏng.</p></div></header><div class="grid2" style="gap:10px">
+    ${saved.map((x, i) => `<div class="gate"><b>${esc(x[2])}</b><div class="muted mono" style="font-size:12.5px">${x[0]} · ${esc(D.utterances.find(u => u.id === x[1]).text.slice(0, 70))}</div><div><button class="btn" data-act="loadsaved" data-id="${i}">Nạp vào mô phỏng</button></div></div>`).join('')}</div></section>`;
+  if (tab === 'mon') {
+    const ov = D.counts;
+    body = `<section class="card"><header><div><h3>Chỉ số theo dõi (monitors)</h3><p>Hàm đã đăng ký trong <code>lab10/monitors.py</code>, và đề xuất cho vòng 2.</p></div></header>
+    <table class="tbl"><thead><tr><th>Chỉ số</th><th>Trạng thái</th><th class="r">base</th><th class="r">prepared</th></tr></thead><tbody>
+    <tr><td class="mono">escalation_rate</td><td>${chip('info', 'có sẵn · không tính là mới')}</td><td class="num r">${dec(R.base.monitors.escalation_rate, 4)}</td><td class="num r">${dec(R.prepared.monitors.escalation_rate, 4)}</td></tr>
+    <tr><td class="mono">model_override_count</td><td>${chip('warn', 'đề xuất · chưa đăng ký')}</td><td class="num r">${ov.base.model_override}</td><td class="num r">${ov.prepared.model_override}</td></tr>
+    <tr><td class="mono">refund_check_asked_gt_entitled</td><td>${chip('warn', 'đề xuất · chưa đăng ký')}</td><td class="num r">—</td><td class="num r">${ov.prepared.refund_check} lần kiểm</td></tr></tbody></table>
+    <p class="muted" style="font-size:13px;margin:8px 0 0">Chỉ số mới phải viết ở vòng 2 (sau thẻ) và đăng ký vào <code>MONITORS</code>; lệnh 6 kiểm nó cho giá trị khác trên gói sự cố.</p></section>
+    <section class="card"><header><div><h3>Chỉ báo hồi quy</h3><p>Ca đúng có còn đúng sau khi sửa không.</p></div></header><div class="grid3">
+    <div class="gate"><span class="muted">Mốc base</span><span class="kpi">${R.base.legit_pass[0]}/${R.base.legit_pass[1]}</span>${chip('warn', 'có 1 ca hỏng')}</div>
+    <div class="gate"><span class="muted">Prepared (bộ nền)</span><span class="kpi" style="color:var(--ok)">${R.prepared.legit_pass[0]}/${R.prepared.legit_pass[1]}</span>${chip('ok', 'không ca nào hỏng thêm')}</div>
+    <div class="gate"><span class="muted">Console · cổng bật, 44 lần chạy</span><span class="kpi" style="color:${curBad.length ? 'var(--bad)' : 'var(--ok)'}">${fails.length - curBad.length}/${fails.length}</span>${curBad.length ? chip('bad', curBad.length + ' ca hỏng') : chip('ok', 'đúng nhãn')}</div></div></section>`;
+  }
+  return `<div class="page-title"><div><h2>Kỹ sư cổng</h2><p>Cổng bằng code, mô phỏng ticket, chỉ số theo dõi · file chính: <code>lab10/guards.py</code>, <code>lab10/monitors.py</code></p></div>${own ? chip('ok', 'Vai của bạn') : chip('info', 'Chỉ đọc')}</div>
+  <div class="seg" role="tablist" style="justify-self:start">${tabs.map(t => `<button data-act="gtab" data-id="${t[0]}" aria-pressed="${tab === t[0]}">${t[1]}</button>`).join('')}</div>${body}`;
+}
+
+/* ---------- product & business ---------- */
+function bizKey() { const b = S.draft.biz; return `${b.scope}|${D.sweep.caps[b.cap]}|${D.sweep.budgets[b.budget]}`; }
+function bizEst() {
+  const b = S.draft.biz, g = D.sweep.grid[bizKey()], cur = D.sweep.grid[`all|${G0.business.daily_refund_cap_vnd}|${G0.business.cost_budget_per_ticket_vnd}`];
+  if (!g) return '<p class="muted">Chưa có tổ hợp này.</p>';
+  const d = (a, c, f) => { const x = a - c; return x === 0 ? '<span class="muted">không đổi</span>' : `<span class="${x > 0 ? 'bad' : 'ok'}" style="color:var(--${x > 0 ? 'bad' : 'ok'})">${x > 0 ? '+' : ''}${f(x)}</span>`; };
+  const roiLow = g.roi < b.roi, costHi = g.cost > bo.cost_per_ticket_vnd_max, cat = [];
+  if (roiLow) cat.push(`ROI ước tính ${dec(g.roi, 2)} thấp hơn ngưỡng ${dec(b.roi, 2)}`);
+  if (costHi) cat.push(`chi phí ${nf(g.cost)}đ vượt ngưỡng đã ký ${nf(bo.cost_per_ticket_vnd_max)}đ`);
+  (g.violations || []).forEach(v => cat.push(v));
+  return `<div class="grid3" style="gap:10px"><div class="gate"><span class="muted">Chi phí/ticket</span><span class="kpi">${nf(g.cost)}đ</span><span style="font-size:12.5px">so với hiện tại ${d(g.cost, cur.cost, nf)}</span></div>
+    <div class="gate"><span class="muted">ROI</span><span class="kpi">${dec(g.roi, 2)}</span><span style="font-size:12.5px">so với hiện tại ${d(g.roi, cur.roi, x => dec(x, 2))}</span></div>
+    <div class="gate"><span class="muted">Độ phủ</span><span class="kpi">${dec(g.coverage, 2)}</span><span style="font-size:12.5px">${dec(g.tickets_per_day, 0)} ticket/ngày vào pilot</span></div></div>
+    <div style="margin-top:10px">${cat.length ? `<div class="alert bad">⚠ ${esc(cat.join(' · '))}</div>` : '<div class="alert ok">Không vượt ngưỡng nào ở tổ hợp này. Hoàn tự động ngày cao nhất ' + nf(g.refund_day_max) + 'đ.</div>'}</div>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Số lấy từ engine thật trên bộ nền ở các mức lưới (không nội suy).</p>`;
+}
+function costChart() {
+  const g = D.sweep.grid[bizKey()];
+  const items = [['base', R.base.cost, ''], ['prepared', R.prepared.cost, ''], ['slider', g ? g.cost : 0, 'slider']];
+  const max = 11000;
+  const bar = (v, c) => `<div style="position:relative;height:24px;background:var(--bg);border-radius:6px"><div class="bar ${c}" style="height:24px;width:${Math.min(100, v / max * 100)}%"></div>
+    <i style="position:absolute;left:${bo.cost_per_ticket_vnd_max / max * 100}%;top:-3px;bottom:-3px;border-left:2px dashed var(--warn)"></i><i style="position:absolute;left:${R.base.manual_cost / max * 100}%;top:-3px;bottom:-3px;border-left:2px solid var(--bad)"></i></div>`;
+  return `<div style="display:grid;gap:10px">${items.map(x => `<div style="display:grid;grid-template-columns:90px 1fr 80px;gap:10px;align-items:center"><span class="muted">${x[0] === 'slider' ? 'theo nút xoay' : x[0]}</span>${bar(x[1], x[1] > bo.cost_per_ticket_vnd_max ? 'bad' : 'ok')}<span class="num r" style="text-align:right">${nf(x[1])}đ</span></div>`).join('')}</div>
+  <p class="muted" style="font-size:12.5px;margin:8px 0 0"><span style="color:var(--warn)">┆</span> ngưỡng đã ký ${nf(bo.cost_per_ticket_vnd_max)}đ · <span style="color:var(--bad)">│</span> làm tay ${nf(R.base.manual_cost)}đ</p>`;
+}
+function segTable() {
+  const r = R[S.segFrom], seg = r.by_segment;
+  const whs = seg.warehouse.map(x => ({ ...x }));
+  const worstW = whs.slice().sort((a, b) => (b.worse_than_manual - a.worse_than_manual) || (a.pass_rate - b.pass_rate) || ((b.cost_per_ticket_vnd || 0) - (a.cost_per_ticket_vnd || 0)))[0];
+  const cars = seg.carrier;
+  const worstC = cars.slice().sort((a, b) => (a.pass_rate - b.pass_rate) || (b.wrongful_refund_vnd - a.wrongful_refund_vnd))[0];
+  const rowsW = whs.map(x => `<tr class="${x.id === worstW.id ? 'worst' : ''}"><td class="mono">${esc(x.id)}</td><td class="num r">${x.trials}</td><td class="num r">${dec(x.pass_rate, 4)}</td><td class="num r">${nf(x.wrongful_refund_vnd)}</td><td class="num r">${x.wrongful_carrier_faults}</td><td class="num r">${x.pii_leaks}</td><td class="num r">${x.cost_per_ticket_vnd == null ? '—' : nf(x.cost_per_ticket_vnd) + 'đ'}${x.worse_than_manual ? ' ' + chip('bad', '> làm tay') : ''}</td></tr>`).join('');
+  const rowsC = cars.map(x => `<tr class="${x.id === worstC.id && (x.pass_rate < 1 || x.wrongful_refund_vnd) ? 'worst' : ''}"><td class="mono">${esc(x.id)}</td><td class="num r">${x.trials}</td><td class="num r">${dec(x.pass_rate, 4)}</td><td class="num r">${nf(x.wrongful_refund_vnd)}</td><td class="num r">${x.wrongful_carrier_faults}</td><td class="num r">${x.pii_leaks}</td><td class="muted">—</td></tr>`).join('');
+  const head = '<thead><tr><th></th><th class="r">trials</th><th class="r">pass_rate</th><th class="r">hoàn sai</th><th class="r">lỗi oan</th><th class="r">lộ dữ liệu</th><th class="r">chi phí/ticket</th></tr></thead>';
+  return `<div class="row spread" style="margin-bottom:8px"><div class="seg" role="group"><button data-act="seg" data-id="base" aria-pressed="${S.segFrom === 'base'}">base</button><button data-act="seg" data-id="prepared" aria-pressed="${S.segFrom === 'prepared'}">prepared</button></div>
+    <span class="muted" style="font-size:13px">Dòng tô đỏ = số xấu nhất để cân nhắc “Thu hẹp”.</span></div>
+    <div class="scroll"><table class="tbl">${head}<tbody>${rowsW}</tbody></table></div><div class="scroll" style="margin-top:10px"><table class="tbl">${head.replace('<th></th>', '<th>hãng</th>')}<tbody>${rowsC}</tbody></table></div>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Kho “?” là ticket không tìm thấy đơn hoặc người gửi không phải chủ đơn: toàn bộ chi phí rơi vào người duyệt.</p>`;
+}
+function renderBiz() {
+  const own = canEdit('biz'), b = S.draft.biz, dsb = dis('biz');
+  const req = (id, label, src, ctrl, shown) => `<div class="gate"><div class="row spread"><b>${label}</b><span class="num" id="lbl_${id}">${shown}</span></div>${ctrl}
+    <label class="f"><span>Lý do (bắt buộc) · nguồn: ${src}</span><textarea data-bind="biz.reasons.${id}" class="${b.reasons[id].trim() ? '' : 'req-empty'}" ${dsb} placeholder="Một câu, có số">${esc(b.reasons[id])}</textarea></label></div>`;
+  return `<div class="page-title"><div><h2>Sản phẩm & kinh doanh</h2><p>Tiêu chí đã ký, cổng kinh doanh, chi phí và phạm vi pilot · file: <code>acceptance_criteria.json</code>, <code>operating_gates.json</code> mục business</p></div>${own ? chip('ok', 'Vai của bạn') : chip('info', 'Chỉ đọc')}</div>
+  <section class="card"><header><div><h3>🔒 Tiêu chí đã ký</h3><p>Ký ${esc(D.meta.signed_at.replace('T', ' '))} · commit ${D.meta.sign_commit} · hash <span class="mono">${D.meta.hash}</span> · người ký: ${esc(C.signed_by)}. Không sửa được sau khi ký.</p></div>${chip('ok', 'khoá')}</header>
+    <div class="grid3" style="gap:10px">
+    ${[['pass_rate_min', '≥ ' + dec(rq.pass_rate_min, 2)], ['pass_k_min', '≥ ' + dec(rq.pass_k_min, 2)], ['hoàn sai tối đa', nf(rq.wrongful_refund_vnd_max) + 'đ'], ['lỗi oan hãng tối đa', rq.wrongful_carrier_faults_max], ['lộ dữ liệu tối đa', rq.pii_leaks_max], ['chi phí/ticket tối đa', nf(bo.cost_per_ticket_vnd_max) + 'đ'], ['ROI tối thiểu', dec(bo.roi_min, 1)], ['hàng kẹt tối đa', bo.queue_stuck_max + ' ca'], ['chuyển người tối đa (nên có)', dec(C.nice_to_have.escalation_rate_max, 2)]].map(x => `<label class="f"><span>${x[0]}</span><input type="text" value="${esc(x[1])}" disabled></label>`).join('')}</div>
+    <details class="acc" style="margin-top:12px"><summary>Điều kiện dừng và bốn dòng decision_rule</summary><div class="body"><p><b>Dừng:</b> ${esc(C.stop_condition)}</p>${Object.entries(C.decision_rule).map(([k, v]) => `<p><b>${esc(k)}:</b> ${esc(v)}</p>`).join('')}</div></details></section>
+  <section class="card"><header><div><h3>Cổng kinh doanh: nút xoay</h3><p>Kéo để xem chi phí, ROI, độ phủ ước tính. Đây là bản nháp, chưa ghi vào <code>operating_gates.json</code>.</p></div></header>${roBanner('biz')}
+    <div class="grid2" style="margin-top:10px">
+    ${req('cap', 'Trần hoàn tự động mỗi ngày', '<code>ops_limits.daily_auto_refund_budget_vnd</code> = ' + nf(D.limits.ops_limits.daily_auto_refund_budget_vnd) + 'đ', `<input type="range" min="0" max="${D.sweep.caps.length - 1}" step="1" value="${b.cap}" data-slide="cap" ${dsb} aria-label="Trần hoàn mỗi ngày">`, nf(D.sweep.caps[b.cap]) + 'đ')}
+    ${req('budget', 'Ngân sách LLM mỗi ticket', '<code>ops_limits.max_llm_cost_per_ticket_vnd</code> = ' + nf(D.limits.ops_limits.max_llm_cost_per_ticket_vnd) + 'đ', `<input type="range" min="0" max="${D.sweep.budgets.length - 1}" step="1" value="${b.budget}" data-slide="budget" ${dsb} aria-label="Ngân sách mỗi ticket">`, nf(D.sweep.budgets[b.budget]) + 'đ')}
+    ${req('scope', 'Phạm vi pilot', '<code>ops_facts</code>, bảng theo kho', `<select data-slide="scope" ${dsb} aria-label="Phạm vi pilot">${D.sweep.scopes.map(s => `<option value="${s}" ${s === b.scope ? 'selected' : ''}>${s === 'all' ? 'Tất cả kho' : 'Kho ' + s}</option>`).join('')}</select>`, b.scope === 'all' ? 'tất cả' : b.scope)}
+    ${req('roi', 'ROI tối thiểu (cổng config)', '<code>acceptance_criteria.json</code> · ngưỡng đã ký ' + dec(bo.roi_min, 1), `<input type="range" min="0" max="1.5" step="0.1" value="${b.roi}" data-slide="roi" ${dsb} aria-label="ROI tối thiểu">`, dec(b.roi, 1))}</div>
+    <div id="bizEst" style="margin-top:14px">${bizEst()}</div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="exportbiz">Xuất JSON mục business</button><span class="muted" style="font-size:13px">Cần đủ 4 lý do. App không ghi vào repo; dán JSON vào file rồi chạy lại <code>lab10.eval</code>.</span></div></section>
+  <div class="grid2"><section class="card"><header><div><h3>Chi phí mỗi ticket so với làm tay</h3></div></header><div id="bizChart">${costChart()}</div></section>
+  <section class="card"><header><div><h3>Theo kho và hãng</h3></div></header><div id="segBox">${segTable()}</div></section></div>`;
+}
+
+/* ---------- operations & legal ---------- */
+const CHECK9 = [['Chất lượng', 'Xong (một phần)', 'Bùi Thái Sỹ', 'Bộ nền xanh; thiếu bộ ticket ngoài nền'], ['Dữ liệu', 'Xong', 'Hoàng Ngọc Hiệu', 'Bản đồ dữ liệu, Phiếu B mục B3'], ['Bảo mật', 'Xong', 'Nguyễn Công Tú', 'Cổng 3 + HAZOP PERTURBED'], ['Quyền hạn', 'Xong (một phần)', 'Bùi Thái Sỹ', 'switches.json + write_gate; chưa có cổng send_reply'], ['Hiệu năng, hạ tầng', 'Chưa', 'Đoàn Sỹ Hưng', 'Chưa đo ngày cao điểm'], ['Chi phí', 'Xong', 'Hoàng Ngọc Hiệu', '4.456đ/ticket, ROI 1,24'], ['Vận hành', 'Xong (một phần)', 'Đoàn Sỹ Hưng', 'Runbook 1–3; chưa có monitor mới'], ['Con người, pháp lý', 'Xong', 'Đoàn Sỹ Hưng', 'legal.* đã bật'], ['Quyết định', 'Xong (v1)', 'Hoàng Ngọc Hiệu', 'Phiếu A mục A5, Phiếu B mục B8']];
+const HAZOP = [['issue_refund · amount_vnd', 'WRONG', 'Số tiền tính từ số ngày khách khai (T-002@55)', 'LogiX mất tiền; hãng bị kéo theo lỗi', 'Cổng 1: so với quyền lợi theo DB'], ['policy (cờ index_active)', 'INVALID', 'Sau 1/12 cờ vẫn trỏ v3 trong khi v4 có hiệu lực', 'Hoàn hoặc ghi lỗi hãng sai chính sách', 'Tra chính sách theo ngày, không theo cờ'], ['delay_cause', 'INCOMPLETE', 'Tracking thiếu nguyên nhân, agent tự gán CARRIER', 'Hãng bị phạt oan', 'Cổng 2 + cờ pháp lý'], ['notify_carrier · payload', 'PERTURBED', 'Ghi chú khách và SĐT người nhận bị chép sang hãng', 'Lộ dữ liệu cá nhân', 'Cổng 3 + legal.pii_fields'], ['issue_refund · retry', 'INCAPABLE', 'LLM 429 ở bước confirm, agent ghi lại lần 2', 'Hoàn đôi', 'Trừ phần đã hoàn trong sổ cái'], ['Người duyệt', 'INCAPABLE', '1 người trực, 15 ca dồn trong 1 giờ', 'Ca cuối chờ hơn 2 giờ', 'Gọi thêm người, hạn chờ 45 phút'], ['Ngân sách', 'WRONG', 'Tổng hoàn chạm quỹ Finance mà không ai biết', 'Bị cắt quỹ', 'Trần 1.000.000đ/ngày'], ['Phạm vi pilot', 'INVALID', 'Kho "?" luôn phải chuyển người', 'Chi phí 10.359đ > làm tay', 'pilot_scope, ngân sách ticket']];
+const RISKS = [['Hàng chờ ùn ngày cao điểm, chưa đo', 'Cao', 'Gọi thêm người từ 30 phút; thu hẹp từ 45 phút', 'NV-HANH'], ['Chính sách v4 từ 1/12 đổi quan hệ vào–ra', 'Cao', 'Tra chính sách theo ngày; chạy lại bộ ticket mới', 'Hoàng Ngọc Hiệu'], ['Tracking nhập sai nguyên nhân ở điểm phát', 'Trung bình', 'Chỉ số theo dõi + NV-OANH đối soát hằng tuần', 'NV-OANH'], ['Nhánh fail_open và write_retry chưa thấy trên bộ nền', 'Trung bình', 'Cổng quyền lợi + trừ sổ cái; viết ticket thử', 'Nguyễn Công Tú'], ['Data mock chưa phản ánh phân bố thật', 'Trung bình', 'Đo lại ở pilot thật trước Gate 2', 'Cả bàn']];
+const RUNBOOK = [['1 · Ai chịu trách nhiệm', 'PIC trợ lý: NV-TUNG (giữ công tắc tắt). Người duyệt đứng tên: NV-HANH. Khiếu nại bên thứ ba: NV-OANH. Kênh: nhóm Zalo vận hành pilot hoàn tiền LogiX. 1 người trực, 6 ca/giờ.'], ['2 · Nhìn con số nào, ngưỡng nào', 'Chờ lâu nhất: vàng ≥ 30 phút (gọi thêm người), đỏ ≥ 45 phút (thu hẹp). Ca ùn: ≥ 2 ca là đỏ. Chi phí: vàng > 6.000đ, đỏ > 7.000đ. Tổng hoàn tự động: vàng ≥ 700.000đ, đỏ ≥ 1.000.000đ. Hoàn sai > 0đ: NV-HANH duyệt tay; ≥ 50.000đ hoặc 2 khoản: tắt issue_refund. Lỗi oan hoặc lộ dữ liệu: tắt file_carrier_fault và notify_carrier.'], ['3 · Điều kiện dừng và cách dừng', 'Từ tín hiệu đỏ đến dừng xong tối đa 15 phút, người bấm NV-TUNG (không liên lạc được trong 5 phút thì NV-HANH). Bước: đặt công tắc off trong switches.json → đổi pilot_scope nếu thu hẹp → báo nhóm Zalo → chạy lại eval. Ticket đang chờ chuyển hàng chờ CSKH. Bật lại: sửa xong nguyên nhân, đạt ba chỉ số an toàn bằng 0, NV-TUNG và NV-HANH cùng ký.'], ['Giờ cao điểm', 'Khoảng 3 lần ngày thường. Ngày đã báo trước thêm 1 người (tổng 2). Hàng chờ ≥ 4 ca hoặc chờ ≥ 30 phút: NV-HANH gọi thêm người. Chờ ≥ 45 phút: NV-TUNG thu hẹp về 50%, rồi 20%.'], ['4–5 · Sau sự cố', 'Chờ thẻ sự cố (viết ở Phiếu C mục C11).']];
+function peakCalc() {
+  const k = S.draft.peak.k, sh = S.draft.peak.share / 100, o = S.draft.ops;
+  const tpd = R.prepared.tickets_per_day * k, rr = R.prepared.review_rate;
+  const arr = tpd * sh * rr, capH = Math.max(1, o.reviewers) * (o.capacity || 6);
+  const backlog = Math.max(0, arr - capH), wait = backlog / capH * 60, need = Math.max(1, Math.ceil(arr / (o.capacity || 6)));
+  const extra = Math.max(0, need - o.reviewers) * D.limits.ops_facts.reviewer_standby_fee_vnd;
+  const lvl = wait >= (o.wait || 45) ? 'bad' : wait >= 30 ? 'warn' : arr > capH * 0.85 ? 'warn' : 'ok';
+  return { tpd, arr, capH, wait, need, extra, lvl, cost: Math.round((R.prepared.cost * R.prepared.tickets_per_day + extra / 1) / R.prepared.tickets_per_day) };
+}
+function peakHtml() {
+  const c = peakCalc(), o = S.draft.ops;
+  const msg = c.lvl === 'bad' ? `ĐỎ: chờ ước tính ${dec(c.wait, 0)} phút, vượt hạn ${o.wait} phút. Thu hẹp phạm vi, dừng xong ≤ 15 phút.` : c.lvl === 'warn' ? (c.wait >= 30 ? `VÀNG: chờ ước tính ${dec(c.wait, 0)} phút. Gọi thêm người trực.` : 'VÀNG: tải sát năng lực duyệt. Chuẩn bị gọi thêm người.') : 'Trong năng lực.';
+  return `<div class="grid3" style="gap:10px"><div class="gate"><span class="muted">Ticket/ngày</span><span class="kpi">${dec(c.tpd, 0)}</span></div>
+    <div class="gate"><span class="muted">Ca cần duyệt/giờ cao điểm</span><span class="kpi">${dec(c.arr, 1)}</span><span class="muted" style="font-size:12.5px">năng lực ${dec(c.capH, 0)} ca/giờ</span></div>
+    <div class="gate"><span class="muted">Số người cần trực</span><span class="kpi">${c.need}</span><span class="muted" style="font-size:12.5px">đang đặt ${o.reviewers}</span></div></div>
+    <div class="alert ${c.lvl === 'bad' ? 'bad' : c.lvl === 'warn' ? 'warn' : 'ok'}" style="margin-top:10px">${esc(msg)}</div>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Ước tính đơn giản, không phải kết quả engine: giờ cao điểm nhận ${S.draft.peak.share}% lượng ngày (giả định của bàn), tỉ lệ chuyển người ${dec(R.prepared.review_rate, 4)} lấy từ prepared. Thêm người: +${nf(c.extra)}đ phí giữ chỗ mỗi ngày.</p>`;
+}
+function renderOps() {
+  const own = canEdit('ops'), o = S.draft.ops, d = dis('ops'), lg = G0.legal;
+  const diff = JSON.stringify([o.pic, o.approver, o.reviewers, o.capacity, o.wait, o.channel, o.sampling, o.stops]) !== JSON.stringify([G0.operations.pic, G0.operations.approver_id, G0.operations.reviewers_on_shift, G0.operations.review_capacity_per_hour, G0.operations.max_queue_wait_minutes, G0.operations.alert_channel, G0.operations.review_sampling_pct, G0.operations.stop_conditions.join('\n')]);
+  const staffOpt = sel => D.staff.map(s => `<option value="${s.staff_id}" ${s.staff_id === sel ? 'selected' : ''}>${s.staff_id} · ${esc(s.name)}</option>`).join('');
+  return `<div class="page-title"><div><h2>Vận hành & pháp lý</h2><p>Cổng con người, cảnh báo, dừng khẩn, runbook · file: <code>operating_gates.json</code> mục operations và legal</p></div>${own ? chip('ok', 'Vai của bạn') : chip('info', 'Chỉ đọc')}</div>
+  ${roBanner('ops')}
+  <div class="grid2"><section class="card"><header><div><h3>Cổng operations</h3><p>${diff ? chip('warn', 'khác bản config đã chốt') : 'Khớp bản config hiện tại'}</p></div></header>
+    <div class="grid2" style="gap:10px">
+    <label class="f"><span>PIC của trợ lý</span><select data-bind="ops.pic" ${d}>${staffOpt(o.pic)}</select></label>
+    <label class="f"><span>Người duyệt đứng tên</span><select data-bind="ops.approver" ${d}>${staffOpt(o.approver)}</select></label>
+    <label class="f"><span>Số người trực mỗi ca</span><input type="number" min="1" max="6" value="${o.reviewers}" data-bind="ops.reviewers" data-num ${d}></label>
+    <label class="f"><span>Năng suất duyệt (ca/giờ)</span><input type="number" min="1" max="60" value="${o.capacity}" data-bind="ops.capacity" data-num ${d}></label>
+    <label class="f"><span>Chờ tối đa (phút)</span><input type="number" min="5" max="120" value="${o.wait}" data-bind="ops.wait" data-num ${d}></label>
+    <label class="f"><span>Tỉ lệ kiểm mẫu (%)</span><input type="number" min="0" max="100" value="${o.sampling}" data-bind="ops.sampling" data-num ${d}></label>
+    <label class="f" style="grid-column:1/-1"><span>Kênh cảnh báo</span><input type="text" value="${esc(o.channel)}" data-bind="ops.channel" ${d}></label>
+    <label class="f" style="grid-column:1/-1"><span>Điều kiện dừng (mỗi dòng một điều kiện)</span><textarea data-bind="ops.stops" ${d} style="min-height:110px">${esc(o.stops)}</textarea></label></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-act="exportops">Xuất JSON mục operations</button><span class="muted" style="font-size:13px">Bản nháp, không ghi vào repo.</span></div></section>
+  <section class="card"><header><div><h3>Cảnh báo hai bậc</h3><p>Khớp runbook phần 2 và 3.</p></div></header>
+    <table class="tbl"><thead><tr><th>Bậc</th><th>Điều kiện</th><th>Việc làm</th></tr></thead><tbody>
+    <tr><td>${chip('warn', 'VÀNG')}</td><td>Hàng chờ ≥ 30 phút</td><td>NV-HANH gọi thêm người trực</td></tr>
+    <tr><td>${chip('bad', 'ĐỎ')}</td><td>Chờ ≥ ${o.wait} phút hoặc ≥ 2 ca ùn</td><td>NV-TUNG thu hẹp phạm vi; dừng xong ≤ 15 phút</td></tr>
+    <tr><td>${chip('bad', 'DỪNG')}</td><td>Lỗi oan, lộ dữ liệu, hoàn sai ≥ 50.000đ</td><td>Tắt thao tác ghi tương ứng trong switches.json</td></tr></tbody></table>
+    <div style="margin-top:14px;border:2px solid var(--bad);border-radius:12px;padding:12px">
+    <div class="row spread"><div><b>Dừng khẩn (kill-switch)</b><div class="muted" style="font-size:13px">Chỉ PIC. Mô phỏng: không đụng tới <code>switches.json</code> thật.</div></div>
+    ${S.killed ? `<button class="btn" data-act="resume" ${d}>Bật lại…</button>` : `<button class="btn danger" data-act="kill" ${canEdit('ops') ? '' : 'disabled'}>Dừng khẩn…</button>`}</div>
+    ${S.killed ? `<div class="alert bad" style="margin-top:8px">Đã dừng lúc ${esc(S.killed.at)} bởi ${esc(S.killed.by)}.</div>` : ''}</div></section></div>
+  <section class="card"><header><div><h3>Mô phỏng giờ cao điểm</h3><p>Kéo hệ số tải và tỉ lệ dồn trong giờ cao điểm.</p></div></header>
+    <div class="grid2" style="gap:14px"><label class="f"><span>Hệ số tải: ×<span id="lbl_k" class="num">${dec(S.draft.peak.k, 1)}</span></span><input type="range" min="1" max="3" step="0.5" value="${S.draft.peak.k}" data-slide="peak.k" aria-label="Hệ số tải"></label>
+    <label class="f"><span>Tỉ lệ dồn trong giờ cao điểm: <span id="lbl_share" class="num">${S.draft.peak.share}%</span> (giả định)</span><input type="range" min="20" max="80" step="5" value="${S.draft.peak.share}" data-slide="peak.share" aria-label="Tỉ lệ dồn"></label></div>
+    <div id="peakBox" style="margin-top:12px">${peakHtml()}</div></section>
+  <div class="grid2"><section class="card"><header><div><h3>Pháp lý</h3><p>Dữ liệu cá nhân bên thứ ba.</p></div></header>
+    <p style="margin:0 0 6px;font-size:13.5px"><b>Trường bị chặn khi gửi hãng (${lg.pii_fields_blocked_to_third_party.length}):</b></p><div class="row" style="margin-bottom:12px">${lg.pii_fields_blocked_to_third_party.map(f => `<span class="pii">${esc(f)}</span>`).join('')}</div>
+    <label class="row"><button class="sw" role="switch" data-act="recorded" aria-checked="${o.recorded}" aria-label="Ghi lỗi hãng phải có nguyên nhân" ${d}></button><span>Ghi lỗi hãng phải có nguyên nhân trong tracking</span></label>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Công tắc này là bản nháp. Bản đã chốt: ${lg.carrier_fault_requires_recorded_cause ? 'bật' : 'tắt'}.</p></section>
+  <section class="card"><header><div><h3>Checklist 9 nhóm việc</h3></div></header><div class="scroll"><table class="tbl"><thead><tr><th>Nhóm</th><th>Trạng thái</th><th>PIC</th></tr></thead><tbody>
+    ${CHECK9.map(r => `<tr><td><b>${r[0]}</b><div class="muted" style="font-size:12.5px">${esc(r[3])}</div></td><td>${chip(r[1].startsWith('Xong') && !r[1].includes('một phần') ? 'ok' : r[1] === 'Chưa' ? 'bad' : 'warn', r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table></div></section></div>
+  <section class="card"><header><div><h3>HAZOP vòng 1</h3><p>Năm dòng kỹ thuật và ba dòng ngoài kỹ thuật (rút gọn từ Phiếu B mục B4).</p></div></header><div class="scroll"><table class="tbl"><thead><tr><th>Thành phần</th><th>Guideword</th><th>Lệch cụ thể</th><th>Hậu quả</th><th>Cổng</th></tr></thead><tbody>
+    ${HAZOP.map(r => `<tr><td>${esc(r[0])}</td><td><span class="mono">${r[1]}</span></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${esc(r[4])}</td></tr>`).join('')}</tbody></table></div></section>
+  <div class="grid2"><section class="card"><header><div><h3>Risk register (nháp)</h3><p>Bản chính thức viết ở Phiếu C mục C10 sau thẻ sự cố.</p></div></header><div class="scroll"><table class="tbl"><thead><tr><th>Rủi ro</th><th>Mức</th><th>Biện pháp</th><th>Phụ trách</th></tr></thead><tbody>
+    ${RISKS.map(r => `<tr><td>${esc(r[0])}</td><td>${chip(r[1] === 'Cao' ? 'bad' : 'warn', r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="card"><header><div><h3>Runbook</h3></div></header>${RUNBOOK.map((r, i) => `<details class="acc" ${i === 0 ? 'open' : ''}><summary>${esc(r[0])}</summary><div class="body">${esc(r[1])}</div></details>`).join('')}</section></div>`;
+}
+
+/* ---------- incident ---------- */
+function treeHtml(nodes, path, ed) {
+  return `<ul>${nodes.map((n, i) => { const p = path.concat(i).join('.'); return `<li><div class="node"><input type="text" value="${esc(n.t)}" data-tree="t" data-path="${p}" ${ed ? '' : 'disabled'} aria-label="Nút"><input type="text" value="${esc(n.e)}" data-tree="e" data-path="${p}" placeholder="bằng chứng ticket@seed" ${ed ? '' : 'disabled'} aria-label="Bằng chứng"><span class="row"><button class="btn" data-act="addnode" data-path="${p}" ${ed ? '' : 'disabled'} title="Thêm nhánh">＋</button>${path.length ? `<button class="btn" data-act="delnode" data-path="${p}" ${ed ? '' : 'disabled'} title="Xoá">✕</button>` : ''}</span></div>${n.c.length ? treeHtml(n.c, path.concat(i), ed) : ''}</li>`; }).join('')}</ul>`;
+}
+function renderIncident() {
+  const I = S.draft.incident, has = /^S[1-8]$/.test(I.card);
+  const ed = canEdit('all');
+  const sc = has ? chip('warn', 'PARTIAL · chưa chạy lệnh 6') : chip('idle', 'chưa có thẻ');
+  const ck = [['integrity', 'ok', 'file khoá còn nguyên'], ['criteria', 'ok', 'hash 5137c9c0 khớp'], ['visible', 'idle', 'cần gói sự cố'], ['hidden', 'idle', 'team chấm chạy'], ['regression', 'ok', 'bộ nền ' + R.prepared.legit_pass.join('/') + ' ở prepared'], ['monitor', 'bad', 'chưa có chỉ số mới']];
+  return `<div class="page-title"><div><h2>Sự cố</h2><p>Mở khi có thẻ (phút 125). Chỉ làm đúng thẻ của bàn.</p></div>${sc}</div>
+  <section class="card"><header><div><h3>Thẻ đã bốc</h3></div></header><div class="row"><label class="f" style="width:160px"><span>Số thẻ (S1 đến S8)</span><input type="text" maxlength="2" value="${esc(I.card)}" data-bind="incident.card" data-upper ${ed ? '' : 'disabled'} placeholder="S?"></label>
+    ${has ? chip('ok', 'Đã nhận ' + esc(I.card)) : chip('idle', 'Chờ Lab Coach báo số thẻ')}</div>
+    ${has ? '' : `<pre class="mono" style="background:var(--bg);padding:12px;border-radius:10px;overflow-x:auto;font-size:12.5px;margin:12px 0 0">git fetch https://github.com/VinUni-AI20k/K5_L3_Day10_PoC-to-Pilot_Gate1_cards.git main\ngit checkout FETCH_HEAD -- incidents/Sx\ngit commit -m "Nhận thẻ Sx"\npython -m lab10.grade --incident Sx</pre>`}</section>
+  <section class="card"><header><div><h3>Thanh tự kiểm</h3><p>Kết quả của lệnh 6. Dòng nào chưa có số hiện trạng hiện tại.</p></div></header><div class="row">${ck.map(c => chip(c[1], `${c[0]} · ${esc(c[2])}`)).join('')}</div></section>
+  <div class="grid2"><section class="card"><header><div><h3>Bảng soát lỗi của thẻ</h3></div></header><label class="f"><span>≥ 2 lỗi có nguồn khác nhau, ≥ 1 lỗi chìm (ticket@seed, loại lỗi, nguồn)</span><textarea data-bind="incident.rows" ${ed ? '' : 'disabled'} style="min-height:140px">${esc(I.rows)}</textarea></label></section>
+  <section class="card"><header><div><h3>Giảm hay ngăn</h3></div></header><label class="f"><span>Từng biện pháp: giảm khả năng hay ngăn hẳn, và vì sao</span><textarea data-bind="incident.reduce" ${ed ? '' : 'disabled'} style="min-height:140px">${esc(I.reduce)}</textarea></label></section></div>
+  <section class="card"><header><div><h3>Fault tree</h3><p>Sự kiện đỉnh là tác hại; ≥ 2 nhánh ở hai tầng khác nhau; mỗi lá có bằng chứng.</p></div>
+    <div class="seg"><button data-act="ttab" data-id="before" aria-pressed="${S.treeTab === 'before'}">Trước khi sửa</button><button data-act="ttab" data-id="after" aria-pressed="${S.treeTab === 'after'}">Sau khi sửa</button></div></header>
+    <div class="tree">${treeHtml(I[S.treeTab], [], ed)}</div></section>`;
+}
+
+/* ---------- submission ---------- */
+function renderSubmit() {
+  const ck = S.draft.submit;
+  const items = [
+    ['Tiêu chí đã ký, commit và push', true, 'commit abaffa2 trên origin/main', ''],
+    ['Report ba mốc: base', true, D.meta.base_run, ''],
+    ['Report ba mốc: prepared', true, D.meta.prepared_run, ''],
+    ['Report ba mốc: after', false, '[THIẾU]', 'Chạy <code>python -m lab10.grade --incident Sx</code> sau khi nhận thẻ và sửa.'],
+    ['Phiếu A (A1 đến A5)', true, 'đã điền', ''], ['Phiếu B (B0 đến B8)', true, 'đã điền', ''],
+    ['Phiếu C (C0 đến C12)', false, '[THIẾU]', 'Điền sau thẻ sự cố; bàn bốc S4 không cần C3.'],
+    ['submission/submission.json', false, '[THIẾU] đang rỗng', 'Điền team, members dạng <code>HoVaTen-MSSV</code>, incident, decision_v1, decision_v2, three_lines.'],
+    ['TEAM.md · bảng thành viên', true, '4 người', ''],
+    ['TEAM.md · mục cá nhân', false, '[THIẾU] 0/4 người', 'Mỗi người viết mục <code>## HoVaTen-MSSV</code> (phần việc, đóng góp, bằng chứng, exit ticket).'],
+    ['Lệnh 7 in ĐỦ THÀNH PHẦN', false, '[THIẾU] chưa chạy', 'Chạy <code>python -m lab10.check_submission --collect</code>, sửa từng dòng THIẾU, chạy lại.'],
+    ['Merge nhánh demo vào main và push', false, '[THIẾU]', 'Team chấm đọc nhánh main. Merge xong chạy lại lệnh 7 trên main.']];
+  const members = [['Bùi Thái Sỹ', '2A202604002'], ['Nguyễn Công Tú', '2A202604008'], ['Hoàng Ngọc Hiệu', '2A202603976'], ['Đoàn Sỹ Hưng', '2A202603990']];
+  const done = items.filter(x => x[1]).length;
+  return `<div class="page-title"><div><h2>Nộp bài</h2><p>Bài nộp là thư mục <code>submission/</code> do lệnh 7 gom, cùng <code>TEAM.md</code>.</p></div>${chip(done === items.length ? 'ok' : 'warn', done + '/' + items.length + ' thành phần')}</div>
+  <section class="card"><header><div><h3>Thành phần phải nộp</h3></div></header><div class="scroll"><table class="tbl"><thead><tr><th>Thành phần</th><th>Trạng thái</th><th>Hướng dẫn</th></tr></thead><tbody>
+    ${items.map(x => `<tr><td>${esc(x[0])}</td><td>${x[1] ? chip('ok', '✓ ' + esc(x[2])) : chip('bad', esc(x[2]))}</td><td>${x[3]}</td></tr>`).join('')}</tbody></table></div>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0">Trạng thái ghi tại thời điểm dựng console; chạy lại <code>python console/build.py</code> không cập nhật phần này, hãy chạy lệnh 7 để biết số thật.</p></section>
+  <section class="card"><header><div><h3>Mỗi thành viên nộp link repo trên LMS</h3><p>Hạn chót: lab chiều/tối 11h59 GMT+7 hôm sau (xác nhận lại với Lab Coach).</p></div></header>
+    ${members.map((m, i) => `<label class="row" style="margin:4px 0"><input type="checkbox" data-bind="submit.lms${i}" ${ck['lms' + i] ? 'checked' : ''}> <span>${esc(m[0])} <span class="muted mono">${m[1]}</span></span></label>`).join('')}</section>`;
+}
+
+/* ---------- render ---------- */
+function renderMain() {
+  const f = { overview: renderOverview, gate: renderGate, biz: renderBiz, ops: renderOps, incident: renderIncident, submit: renderSubmit }[S.view];
+  const keep = document.activeElement && document.activeElement.id;
+  $('#main').innerHTML = f();
+  if (keep) { const el = document.getElementById(keep); if (el) el.focus(); }
+}
+function render() { setTheme(); renderTop(); renderNav(); renderMain(); }
+
+/* ---------- state binding ---------- */
+function setPath(path, val) {
+  const parts = path.split('.'); let o = parts[0] === 'sim' ? S : S.draft;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts[parts.length - 1]] = val;
+}
+function treeAt(path) { const t = S.draft.incident[S.treeTab]; let list = t, node = null; path.split('.').forEach(i => { node = list[+i]; list = node.c; }); return node; }
+function parentList(path) { const t = S.draft.incident[S.treeTab], ps = path.split('.').map(Number); let list = t; for (let i = 0; i < ps.length - 1; i++) list = list[ps[i]].c; return [list, ps[ps.length - 1]]; }
+function updBiz() {
+  const b = S.draft.biz;
+  const el = id => document.getElementById(id);
+  if (el('lbl_cap')) el('lbl_cap').textContent = nf(D.sweep.caps[b.cap]) + 'đ';
+  if (el('lbl_budget')) el('lbl_budget').textContent = nf(D.sweep.budgets[b.budget]) + 'đ';
+  if (el('lbl_scope')) el('lbl_scope').textContent = b.scope === 'all' ? 'tất cả' : b.scope;
+  if (el('lbl_roi')) el('lbl_roi').textContent = dec(b.roi, 1);
+  if (el('bizEst')) el('bizEst').innerHTML = bizEst();
+  if (el('bizChart')) el('bizChart').innerHTML = costChart();
+}
+function updPeak() {
+  const el = id => document.getElementById(id);
+  if (el('lbl_k')) el('lbl_k').textContent = dec(S.draft.peak.k, 1);
+  if (el('lbl_share')) el('lbl_share').textContent = S.draft.peak.share + '%';
+  if (el('peakBox')) el('peakBox').innerHTML = peakHtml();
+}
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.slide) {
+    const k = t.dataset.slide;
+    if (k === 'peak.k') { S.draft.peak.k = +t.value; save(); updPeak(); return; }
+    if (k === 'peak.share') { S.draft.peak.share = +t.value; save(); updPeak(); return; }
+    S.draft.biz[k] = k === 'scope' ? t.value : (k === 'roi' ? +t.value : +t.value); save(); updBiz(); return;
+  }
+  if (t.dataset.tree) { const n = treeAt(t.dataset.path); n[t.dataset.tree] = t.value; save(); return; }
+  if (t.dataset.bind && t.type !== 'radio' && t.type !== 'checkbox') {
+    let v = t.value; if (t.dataset.upper !== undefined) { v = v.toUpperCase(); t.value = v; }
+    if (t.dataset.num !== undefined) v = +v;
+    setPath(t.dataset.bind, v); save();
+    if (t.dataset.bind.startsWith('ops.')) { updPeak(); }
+    if (t.dataset.bind === 'incident.card') renderMain();
+    if (t.dataset.bind.startsWith('biz.reasons')) t.classList.toggle('req-empty', !t.value.trim());
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.slide === 'scope') { S.draft.biz.scope = t.value; save(); updBiz(); return; }
+  if (t.dataset.bind && (t.type === 'radio' || t.type === 'checkbox')) {
+    setPath(t.dataset.bind, t.type === 'checkbox' ? t.checked : t.value); save();
+    if (t.dataset.bind === 'decision.v2') renderMain();
+    if (t.dataset.bind.startsWith('decision.ev')) save();
+  } else if (t.dataset.bind && t.tagName === 'SELECT') {
+    setPath(t.dataset.bind, t.value); save();
+    if (t.dataset.bind.startsWith('sim.')) { S.sim.res = null; S.sim.err = ''; renderMain(); }
+    if (t.dataset.bind.startsWith('ops.')) renderMain();
+  }
+});
+function modal(html) { $('#modal').innerHTML = html; $('#modalBg').classList.add('on'); const f = $('#modal input,#modal button'); if (f) f.focus(); }
+function closeModal() { $('#modalBg').classList.remove('on'); }
+function download(name, obj) {
+  const txt = JSON.stringify(obj, null, 2);
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('Đã chép JSON vào clipboard'), () => toast('Đã tạo file ' + name));
+  else toast('Đã tạo file ' + name);
+}
+document.addEventListener('click', e => {
+  if (e.target.id === 'modalBg') { closeModal(); return; }
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act, id = t.dataset.id;
+  switch (a) {
+    case 'theme': S.theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; save(); render(); return;
+    case 'persona': S.persona = id; S.view = id; save(); render(); return;
+    case 'view': S.view = id; render(); return;
+    case 'gtab': S.tab.gate = id; renderMain(); return;
+    case 'simmode': S.sim.mode = id; S.sim.res = null; S.sim.err = ''; renderMain(); return;
+    case 'simseed': S.sim.seed = id; S.sim.res = null; renderMain(); return;
+    case 'tog': if (canEdit('gate')) { S.sim.tog[+id] = S.sim.tog[+id] ? 0 : 1; if (S.sim.res) runSim(); renderMain(); } return;
+    case 'run': runSim(); renderMain(); return;
+    case 'runcompare': S.tab.gate = 'sim'; S.sim.mode = 'preset'; S.sim.order = 'O-1002'; S.sim.utt = 'u1'; S.sim.tog = [1, 1, 1]; runSim(); renderMain(); return;
+    case 'loadsaved': { const x = [['O-1002', 'u1'], ['O-1026', 'u3'], ['O-1002', 'u4'], ['O-1004', 'u5']][+id]; S.tab.gate = 'sim'; S.sim.mode = 'preset'; S.sim.order = x[0]; S.sim.utt = x[1]; runSim(); renderMain(); return; }
+    case 'seg': S.segFrom = id; $('#segBox').innerHTML = segTable(); return;
+    case 'exportbiz': {
+      const b = S.draft.biz;
+      if (Object.values(b.reasons).some(v => !v.trim())) { toast('Cần đủ lý do cho cả 4 nút xoay'); renderMain(); return; }
+      download('business.json', { business: { daily_refund_cap_vnd: D.sweep.caps[b.cap], cost_budget_per_ticket_vnd: D.sweep.budgets[b.budget], pilot_scope: b.scope === 'all' ? { mode: 'all', warehouses: [], percent: 100 } : { mode: 'warehouse', warehouses: b.scope.split('+'), percent: 100 }, roi_min: b.roi }, ly_do: b.reasons }); return; }
+    case 'exportops': { const o = S.draft.ops; download('operations.json', { operations: { pic: o.pic, approver_id: o.approver, reviewers_on_shift: o.reviewers, review_capacity_per_hour: o.capacity, max_queue_wait_minutes: o.wait, stop_conditions: o.stops.split('\n').map(x => x.trim()).filter(Boolean), alert_channel: o.channel, review_sampling_pct: o.sampling } }); return; }
+    case 'recorded': if (canEdit('ops')) { S.draft.ops.recorded = !S.draft.ops.recorded; save(); renderMain(); } return;
+    case 'ttab': S.treeTab = id; renderMain(); return;
+    case 'addnode': { const n = treeAt(t.dataset.path); n.c.push({ t: '', e: '', c: [] }); save(); renderMain(); return; }
+    case 'delnode': { const [list, i] = parentList(t.dataset.path); list.splice(i, 1); save(); renderMain(); return; }
+    case 'kill':
+      modal(`<h3>Dừng khẩn trợ lý hoàn tiền?</h3><p style="margin:0">Bước 1/2. Trợ lý ngừng xử lý, mọi ticket chuyển sang hàng chờ CSKH. Đây là mô phỏng.</p><label class="f"><span>Người bấm</span><select id="killBy">${D.staff.map(s => `<option value="${s.staff_id}" ${s.staff_id === S.draft.ops.pic ? 'selected' : ''}>${s.staff_id} · ${esc(s.name)}</option>`).join('')}</select></label>
+      <label class="f"><span>Bước 2/2: gõ <b>DUNG</b> để xác nhận</span><input type="text" id="killTxt" autocomplete="off"></label>
+      <div class="row spread"><button class="btn" data-act="closemodal">Huỷ</button><button class="btn danger" data-act="killgo">Xác nhận dừng</button></div>`); return;
+    case 'killgo': {
+      if ($('#killTxt').value.trim().toUpperCase() !== 'DUNG') { $('#killTxt').classList.add('req-empty'); return; }
+      const by = $('#killBy').value, d = new Date(); S.killed = { by, at: d.toTimeString().slice(0, 5) }; save(); closeModal(); render(); toast('Đã dừng khẩn (mô phỏng)'); return; }
+    case 'resume':
+      modal(`<h3>Bật lại trợ lý</h3><p style="margin:0;font-size:14px">Điều kiện: nguyên nhân đã sửa, ba chỉ số an toàn bằng 0, NV-TUNG và NV-HANH cùng ký.</p>
+      <label class="row"><input type="checkbox" id="rs1"> <span>NV-TUNG đã ký</span></label><label class="row"><input type="checkbox" id="rs2"> <span>NV-HANH đã ký</span></label>
+      <label class="f"><span>Lý do bật lại (bắt buộc)</span><textarea id="rsWhy"></textarea></label>
+      <div class="row spread"><button class="btn" data-act="closemodal">Huỷ</button><button class="btn primary" data-act="resumego">Bật lại</button></div>`); return;
+    case 'resumego': if ($('#rs1').checked && $('#rs2').checked && $('#rsWhy').value.trim()) { S.killed = null; save(); closeModal(); render(); toast('Đã bật lại (mô phỏng)'); } else toast('Cần cả hai chữ ký và lý do'); return;
+    case 'closemodal': closeModal(); return;
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener && matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!S.theme) render(); });
+
+function fromHash() {
+  const h = (location.hash || '').slice(1).split(',');
+  h.forEach(x => {
+    if (['overview', 'gate', 'biz', 'ops', 'incident', 'submit'].includes(x)) { S.view = x; if (['gate', 'biz', 'ops'].includes(x)) S.persona = x; }
+    if (x === 'sim') { S.view = 'gate'; S.persona = 'gate'; S.tab.gate = 'sim'; S.sim.mode = 'preset'; S.sim.order = 'O-1002'; S.sim.utt = 'u1'; S.sim.tog = [1, 1, 1]; runSim(); }
+    if (x === 'gates') { S.view = 'gate'; S.tab.gate = 'gates'; }
+    if (x === 'bad') { S.view = 'gate'; S.tab.gate = 'bad'; }
+    if (x === 'dark') S.theme = 'dark';
+    if (x === 'light') S.theme = 'light';
+  });
+}
+fromHash();
+render();
+window.addEventListener('hashchange', () => { fromHash(); render(); });
+
+/* ---------- self test: index.html?selftest=1 ---------- */
+if (/[?&]selftest=1/.test(location.search)) {
+  const log = [], t = (n, c) => log.push((c ? 'PASS ' : 'FAIL ') + n);
+  try {
+    t('overview renders table', document.querySelectorAll('.tbl tbody tr').length >= 9);
+    S.view = 'gate'; S.tab.gate = 'sim'; renderMain();
+    document.querySelector('[data-act="runcompare"]').click();
+    const tx = document.getElementById('main').innerText;
+    const cnt = x => (x.match(/\+30\.000đ/g) || []).length;
+    const c1 = cnt(tx);
+    t('compare: base refunds, gate-on blocks (' + c1 + ')', c1 === 2 && /sổ cái 30\.000đ → 0đ/.test(tx));
+    S.sim.tog = [0, 1, 1]; runSim(); renderMain(); const c2 = cnt(document.getElementById('main').innerText);
+    t('refund gate off: refund returns (' + c2 + ')', c2 === 4);
+    S.view = 'biz'; S.persona = 'biz'; renderMain();
+    const sl = document.querySelector('[data-slide="cap"]'); sl.value = 0; sl.dispatchEvent(new Event('input', { bubbles: true }));
+    t('biz estimate updates', /Chi phí\/ticket/.test(document.getElementById('bizEst').innerText));
+    S.view = 'ops'; S.persona = 'ops'; renderMain();
+    const k = document.querySelector('[data-slide="peak.k"]'); k.value = 3; k.dispatchEvent(new Event('input', { bubbles: true }));
+    t('peak updates', /VÀNG|ĐỎ|Trong năng lực/.test(document.getElementById('peakBox').innerText));
+    S.view = 'overview'; renderMain();
+    const r = document.querySelector('input[value="Tiếp tục"]'); r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true }));
+    t('continue without after warns', /Chưa có cột/.test(document.getElementById('main').innerText));
+    S.view = 'incident'; renderMain(); S.view = 'submit'; renderMain(); t('submit shows THIEU', /\[THIẾU\]/.test(document.getElementById('main').innerText));
+  } catch (err) { log.push('ERROR ' + err.message); }
+  const pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = log.join('\n'); document.body.appendChild(pre);
+}
+})();
+</script>
+</body>
+</html>

@@ -54,7 +54,11 @@ Commit `abaffa2` (ký), `76fdeb3` (chốt vòng 1); `R-base-before-20261119-1431
 
 ### Exit ticket
 
-*(bạn tự viết)*
+- Điều tôi làm tốt nhất: trước khi sửa cổng 4 và 5 tôi dựng fault tree và chạy trace `S2-04@11`, `S2-20@11`, `S2-43@11`, nên mỗi thay đổi đều bám vào một ticket cụ thể, không sửa theo cảm tính.
+- Điều tôi làm chưa tốt: tôi chốt vòng 1 (hash `44c8d63e`) khi chưa kiểm hết các ca biên của cổng 1–3, nên vòng 2 phải quay lại sửa phần đã "xong".
+- Điều tôi học được: một cổng chỉ đáng tin khi nó được kiểm bằng ticket có chủ đích, còn kiểm trên bộ nền thì chưa đủ. Phê duyệt phải kiểm cả hạn mức lẫn hiệu lực, và trần chi trả mỗi khách mỗi ngày (300.000đ) cần một cổng riêng.
+- Nếu làm lại: tôi sẽ viết trace cho từng cổng ngay khi code xong, thay vì gom lại cuối vòng.
+- Việc tôi cần người khác giúp: đối chiếu với Sản phẩm (Hiệu) về ngưỡng trần, vì con số này do nhóm chốt trong `config/operating_gates.json`.
 
 ## NguyenCongTu-2A202604008
 
@@ -120,4 +124,3 @@ Phiếu C mục C3.1, C4, C10, C11; `R-S2-after-20261119-161758-b63756`, `R-base
 ### Exit ticket
 
 *(bạn tự viết)*
-
