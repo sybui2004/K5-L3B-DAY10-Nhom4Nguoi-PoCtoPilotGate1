@@ -20,6 +20,17 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; bàn 3 người th
 
 Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, khớp bảng trên.
 
+## Phân chia công việc
+
+Toàn bộ bài đã làm xong và gom trên nhánh `demo`. Mỗi người tự đưa phần của mình từ `demo` vào `main` qua nhánh riêng, theo [`commit.md`](commit.md).
+
+| Người | Nhánh riêng | File đưa vào `main` | Mục phiếu phụ trách |
+|---|---|---|---|
+| Bùi Thái Sỹ | `sy-gates` | `lab10/guards_round1.py`, `config/operating_gates.round1.json`, `config/round1.lock`, `lab10/guards.py`, `incidents/S2/`, `TEAM.md` | Phiếu B mục B0–B2, B7.1–B7.2; Phiếu C mục C0, C2, C6, C7 |
+| Nguyễn Công Tú | `tu-monitors-console` | `lab10/monitors.py`, `console/` (`build.py`, `template.html`, `index.html`, `data.json`) | Phiếu B mục B7.3; Phiếu C mục C8, C9 |
+| Hoàng Ngọc Hiệu | `hieu-criteria-forms` | `templates/form-a-criteria.md`, `templates/form-b-evaluation-gates.md`, `config/operating_gates.json`, `workflow.md` | Phiếu A (A1–A5); Phiếu B mục B3, B6, B7.4, B8; Phiếu C mục C1, C5, C12 |
+| Đoàn Sỹ Hưng | `hung-incident-submission` | `templates/form-c-incident.md`, `submission/` (`submission.json` và phần lệnh 7 gom), `demo.md`, `handoff/`, `commit.md` | Phiếu B mục B4, B5, B7.5, B7.6; Phiếu C mục C3.1, C4, C10, C11 |
+
 ## Cá nhân
 
 Mỗi thành viên tự viết một mục bên dưới (chép mẫu, đổi tiêu đề thành họ tên không dấu và MSSV, ví dụ `## NguyenVanAn-20241234`).
@@ -28,11 +39,14 @@ Mỗi thành viên tự viết một mục bên dưới (chép mẫu, đổi ti�
 
 ### Phần việc phụ trách
 
-Kỹ sư cổng 1, trưởng nhóm: lệnh eval/gate/trace, `lab10/guards.py` (`write_gate`, cổng 1–5), trace sự cố; Phiếu B mục B0–B2, B7.1; Phiếu C mục C2, C7.
+Kỹ sư cổng 1, trưởng nhóm: lệnh eval/gate/trace, `lab10/guards.py` (`write_gate`, cổng 1–5), trace sự cố, chốt vòng 1, nhận thẻ; Phiếu B mục B0–B2, B7.1–B7.2; Phiếu C mục C0, C2, C6, C7.
 
 ### Đóng góp cụ thể
 
-*(bạn tự viết)*
+- Ký tiêu chí (`python -m lab10.criteria sign`, hash `5137c9c0`, commit `abaffa2`), chạy base, gate và trace `T-002@55` (Phiếu B mục B0–B2).
+- Code cổng 1–3 trong `lab10/guards.py` (hoàn theo quyền lợi tính từ DB, ghi lỗi hãng theo tracking, lọc trường gửi hãng); chạy lệnh 5 chốt vòng 1 (hash `44c8d63e`).
+- Vòng 2 (thẻ S2): nhận thẻ, trace `S2-04@11`, `S2-20@11`, `S2-43@11`; code cổng 4 (phê duyệt hợp lệ trên hạn mức, `_approval_valid`) và cổng 5 (trần 300.000đ mỗi khách mỗi ngày); fault tree trước khi sửa và bảng sửa (Phiếu C mục C2, C6, C7).
+- Đưa vào `main` (nhánh `sy-gates`): bản chốt vòng 1, `lab10/guards.py`, `incidents/S2/`, `TEAM.md`.
 
 ### Bằng chứng
 
@@ -46,11 +60,15 @@ Commit `abaffa2` (ký), `76fdeb3` (chốt vòng 1); `R-base-before-20261119-1431
 
 ### Phần việc phụ trách
 
-Kỹ sư cổng 2: `lab10/monitors.py`, behavioral test (câu 2.8), chạy ba mốc; Phiếu B mục B7.3; Phiếu C mục C8.
+Kỹ sư cổng 2: `lab10/monitors.py`, behavioral test (câu 2.8), chạy ba mốc, Gate 1 Console; Phiếu B mục B7.3; Phiếu C mục C8, C9.
 
 ### Đóng góp cụ thể
 
-*(bạn tự viết)*
+- Behavioral test (Phiếu B mục B7.3): một tính chất và hai ticket hiểm chạy bằng `--adhoc` (đơn `O-1002` khách khai 9 ngày; đơn quà `O-1026` có số điện thoại người nhận), cả hai giữ tính chất.
+- Ba chỉ số theo dõi mới trong `lab10/monitors.py`, đã đăng ký `MONITORS`: `untrusted_directive_rate` (0,0 trên bộ nền, 0,467 trên S2), `customer_day_auto_refund_max_vnd` (3.230.000đ ở base, 282.000đ ở after), `non_logix_payer_proposal_rate` (0,4 trên S2). Phiếu C mục C8.
+- Chạy ba mốc base, prepared, after cho S2 và kiểm regression trên bộ nền; fault tree sau khi sửa (Phiếu C mục C9).
+- Gate 1 Console (`console/`): dựng trang xem ba mốc từ dữ liệu engine thật (`console/build.py` sinh `index.html` từ `template.html` và `data.json`).
+- Đưa vào `main` (nhánh `tu-monitors-console`): `lab10/monitors.py`, `console/`.
 
 ### Bằng chứng
 
@@ -64,11 +82,14 @@ Kỹ sư cổng 2: `lab10/monitors.py`, behavioral test (câu 2.8), chạy ba m�
 
 ### Phần việc phụ trách
 
-Sản phẩm và kinh doanh: tiêu chí chấp nhận (`config/acceptance_criteria.json`), bản đồ dữ liệu, `operating_gates.json` mục `business`, quyết định v1 (Phiếu B mục B8) và v2 (Phiếu C mục C12); Phiếu A; Phiếu C mục C5 (specification).
+Sản phẩm và kinh doanh: tiêu chí chấp nhận (`config/acceptance_criteria.json`), bản đồ dữ liệu, `operating_gates.json` mục `business`, quyết định v1 (Phiếu B mục B8) và v2 (Phiếu C mục C12); Phiếu A; Phiếu B mục B3, B6; Phiếu C mục C1, C5 (specification).
 
 ### Đóng góp cụ thể
 
-*(bạn tự viết)*
+- Phiếu A: mục tiêu hệ thống và của chị Oanh, chị Hạnh; thước đo offline cho bước ghi lỗi hãng và telemetry production; câu tiêu chí cho 6 chỉ số; ngưỡng đã ký (pass_rate 0,97, pass_k 0,93, ba chỉ số an toàn bằng 0, chi phí ≤ 7.000đ/ticket, ROI ≥ 0,3, 0 ca ùn) và 4 dòng `decision_rule`.
+- Phiếu B: bản đồ dữ liệu và ví dụ drift REFUND-v3 → v4 ngày 1/12 (B3); dẫn pre-mortem 4 lăng kính (B6); cổng kinh doanh trong `config/operating_gates.json` (trần 1.000.000đ/ngày, 1.200đ/ticket, phạm vi `all`, ROI 0,3) (B7.4); quyết định v1 "Tiếp tục" (B8).
+- Phiếu C: đối chiếu mốc prepared với pre-mortem (C1), specification và giả định môi trường (C5), quyết định v2 giữ "Tiếp tục" với ba dòng bắt buộc (C12).
+- Đưa vào `main` (nhánh `hieu-criteria-forms`): Phiếu A, Phiếu B, `config/operating_gates.json`, `workflow.md`.
 
 ### Bằng chứng
 
@@ -88,7 +109,8 @@ Vận hành và pháp lý: HAZOP, checklist 9 nhóm việc + PIC, runbook, `oper
 
 - Vòng 1: HAZOP 5 guideword trên tool ghi, checklist 9 nhóm có PIC, runbook 1–3 và giờ cao điểm khớp số trong `config/operating_gates.json` (1 người trực, 6 ca/giờ, chờ tối đa 45 phút, PIC NV-TUNG, duyệt NV-HANH).
 - Vòng 2 (thẻ S2): bảng mức kiểm soát của con người (C3.1) chỉ ra 4 chỗ lệch giữa quyền NV-HANH cần và quyền hệ thống đang cho; HAZOP của thẻ (C4) có nhánh phê duyệt hết hạn chưa thấy trên trace; risk register (C10), cập nhật checklist và runbook 4–5 (C11).
-- Điền `submission/submission.json`, chạy lệnh 7.
+- Điền `submission/submission.json`, chạy lệnh 7; kịch bản demo (`demo.md`), kế hoạch commit (`commit.md`).
+- Đưa vào `main` (nhánh `hung-incident-submission`): Phiếu C, `submission/`, `demo.md`, `handoff/`, `commit.md`; gộp nhật ký vòng 1 và vòng 2, gom bài lần cuối.
 - Đã dùng trợ lý AI (Claude) để đọc trace, soạn nháp phiếu C và đề xuất cổng 4–5; mọi con số đã được kiểm lại bằng `lab10.eval` / `lab10.grade`.
 
 ### Bằng chứng
