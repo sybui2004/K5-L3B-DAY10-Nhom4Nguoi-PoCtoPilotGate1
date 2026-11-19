@@ -123,4 +123,4 @@ Phiếu C mục C3.1, C4, C10, C11; `R-S2-after-20261119-161758-b63756`, `R-base
 
 ### Exit ticket
 
-*(bạn tự viết)*
+Học được rằng với một trợ lý có quyền ghi sổ, rủi ro lớn nhất nằm ở người và quy trình quanh nó: thẻ S2 cho thấy "số tiền đúng" chưa đủ, còn phải rõ ai được quyết (mã phê duyệt của NV-HANH) và trần theo từng khách mỗi ngày. Bảng mức kiểm soát của con người (C3.1) giúp thấy 4 chỗ hệ thống cho ít quyền hơn mức người cần, và đó chính là chỗ đặt cổng 4, 5. Cũng nhận ra runbook phải khớp từng con số với `config/operating_gates.json`: runbook vòng 1 của bàn lệch config ở ngưỡng tắt `issue_refund` và người thu hẹp phạm vi, nên đã đính chính ở Phiếu C mục C11. Còn một điều chưa biết: dữ liệu là mock nên chưa đo được lượng ca chuyển người khi hạn mức tự động hạ còn 100.000đ từ 1/12; cần đo lại trong pilot thật. Phần dùng AI (Claude): đọc trace, soạn nháp Phiếu C, đề xuất cổng 4–5 và soạn kế hoạch commit; mọi con số đã được kiểm lại bằng `lab10.eval` / `lab10.grade`.
